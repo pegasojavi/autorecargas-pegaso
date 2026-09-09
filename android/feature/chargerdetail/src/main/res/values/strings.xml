@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chargerdetail_open_app_action">Open app</string>
+    <string name="chargerdetail_get_directions_action">Directions</string>
+    <string name="chargerdetail_connector_type2">Type 2</string>
+    <string name="chargerdetail_connector_ccs">CCS</string>
+    <string name="chargerdetail_connector_chademo">CHAdeMO</string>
+    <string name="chargerdetail_connector_unknown">Connector</string>
+</resources>

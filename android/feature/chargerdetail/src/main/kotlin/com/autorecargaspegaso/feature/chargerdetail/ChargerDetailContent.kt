@@ -11,6 +11,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.autorecargaspegaso.domain.Charger
@@ -34,6 +35,9 @@ fun ChargerDetailContent(
 ) {
     Column(modifier = modifier.fillMaxWidth().padding(16.dp)) {
         Text(text = charger.name, style = MaterialTheme.typography.titleLarge)
+        charger.operatorDisplayName?.let {
+            Text(text = it, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
+        }
         charger.address?.let {
             Text(text = it, style = MaterialTheme.typography.bodyLarge)
         }
@@ -49,21 +53,22 @@ fun ChargerDetailContent(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Button(onClick = onOpenApp, modifier = Modifier.weight(1f)) {
-                Text("Abrir app")
+                Text(stringResource(R.string.chargerdetail_open_app_action))
             }
             OutlinedButton(onClick = onGetDirections, modifier = Modifier.weight(1f)) {
-                Text("Cómo llegar")
+                Text(stringResource(R.string.chargerdetail_get_directions_action))
             }
         }
     }
 }
 
+@Composable
 private fun connectorLabel(connector: Connector): String {
     val type = when (connector.type) {
-        ConnectorType.TYPE_2 -> "Tipo 2"
-        ConnectorType.CCS -> "CCS"
-        ConnectorType.CHADEMO -> "CHAdeMO"
-        ConnectorType.UNKNOWN -> "Conector"
+        ConnectorType.TYPE_2 -> stringResource(R.string.chargerdetail_connector_type2)
+        ConnectorType.CCS -> stringResource(R.string.chargerdetail_connector_ccs)
+        ConnectorType.CHADEMO -> stringResource(R.string.chargerdetail_connector_chademo)
+        ConnectorType.UNKNOWN -> stringResource(R.string.chargerdetail_connector_unknown)
     }
     val power = connector.powerKw?.let { " · ${it.toInt()} kW" }.orEmpty()
     return type + power

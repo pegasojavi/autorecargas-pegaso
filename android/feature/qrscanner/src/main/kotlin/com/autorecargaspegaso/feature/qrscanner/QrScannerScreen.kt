@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -73,11 +74,11 @@ private fun PermissionRationale(onRequestPermission: () -> Unit) {
     Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(24.dp)) {
         androidx.compose.foundation.layout.Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "Necesitamos la cámara para leer el código QR del cargador. No se guarda ninguna imagen.",
+                text = stringResource(R.string.qrscanner_permission_rationale),
                 style = MaterialTheme.typography.bodyLarge,
             )
             Button(onClick = onRequestPermission, modifier = Modifier.padding(top = 16.dp)) {
-                Text("Permitir cámara")
+                Text(stringResource(R.string.qrscanner_permission_action))
             }
         }
     }

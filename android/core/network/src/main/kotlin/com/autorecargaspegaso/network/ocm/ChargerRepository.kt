@@ -27,10 +27,19 @@ class OcmChargerRepository(
                 distanceKm = distanceKm,
                 openDataOnly = true,
                 apiKey = apiKey,
-            ).mapNotNull(mapper::map)
+                // El límite fijo por defecto de la API (100) truncaba zonas
+                // con muchos cargadores (p. ej. A Coruña) de forma no
+                // determinista -- resultados distintos en cada llamada
+                // idéntica, sin orden estable garantizado por OCM al
+                // recortar. Se escala con el radio consultado (más área,
+                // más resultados esperables) para no truncar en la práctica.
+                maxResults = maxResultsFor(distanceKm),
+            ).map(mapper::map)
         }.recoverCatching { throwable ->
             throw AppErrorException(AppError.Unexpected(throwable))
         }
+
+    private fun maxResultsFor(distanceKm: Double): Int = (distanceKm * 20).toInt().coerceIn(200, 2000)
 }
 
 /** Envuelve un [AppError] como excepción para poder propagarlo dentro de [Result.failure]. */

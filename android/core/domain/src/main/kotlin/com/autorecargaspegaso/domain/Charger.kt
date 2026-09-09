@@ -31,6 +31,13 @@ data class Charger(
     val connectors: List<Connector>,
     val nativeProviderId: String,
     val roamingProviderIds: List<String> = emptyList(),
+    /**
+     * Nombre del operador tal como lo da OCM, aunque [nativeProviderId] no
+     * esté en `ProviderDirectory` todavía (CLAUDE.md sección 5) — permite
+     * mostrar "de qué red es" un cargador aunque aún no sepamos abrir su
+     * app. `null` si OCM no trae operador.
+     */
+    val operatorDisplayName: String? = null,
 ) {
     /** Todas las apps candidatas para este cargador, nativa incluida, sin duplicados. */
     val allProviderIds: List<String>

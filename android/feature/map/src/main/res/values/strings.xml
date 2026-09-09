@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Inglés: bucket sin cualificador = idioma de reserva (CLAUDE.md sección 6). -->
+<resources>
+    <string name="map_title">AutoRecargas Pegaso</string>
+    <string name="map_search_placeholder">Search address or city</string>
+    <string name="map_locate_me_action">Center on my location</string>
+    <string name="map_search_this_area">Search this area</string>
+    <string name="map_filter_connector_type2">Type 2</string>
+    <string name="map_filter_connector_ccs">CCS</string>
+    <string name="map_filter_min_power">≥ 50 kW</string>
+    <string name="map_qr_scan_action">Scan charger</string>
+    <string name="map_error_loading">Couldn\'t load chargers: %1$s</string>
+    <string name="map_dismiss_action">Dismiss</string>
+    <string name="map_my_location_label">Me</string>
+    <string name="map_toggle_list_action">List view</string>
+</resources>

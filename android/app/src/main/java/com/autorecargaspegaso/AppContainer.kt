@@ -4,6 +4,9 @@ import android.content.Context
 import com.autorecargaspegaso.feature.applauncher.AndroidChargerAppLauncher
 import com.autorecargaspegaso.feature.applauncher.JsonProviderDirectory
 import com.autorecargaspegaso.feature.applauncher.JsonRoamingPartnerships
+import com.autorecargaspegaso.network.geocoding.GeocodingRepository
+import com.autorecargaspegaso.network.geocoding.NominatimClientFactory
+import com.autorecargaspegaso.network.geocoding.NominatimGeocodingRepository
 import com.autorecargaspegaso.network.ocm.ChargerMapper
 import com.autorecargaspegaso.network.ocm.ChargerRepository
 import com.autorecargaspegaso.network.ocm.OcmChargerRepository
@@ -24,4 +27,5 @@ class AppContainer(context: Context) {
     val chargerRepository: ChargerRepository =
         OcmChargerRepository(openChargeMapApi, chargerMapper, apiKey = BuildConfig.OCM_API_KEY)
     val chargerAppLauncher = AndroidChargerAppLauncher(context.applicationContext, providerDirectory)
+    val geocodingRepository: GeocodingRepository = NominatimGeocodingRepository(NominatimClientFactory.create())
 }

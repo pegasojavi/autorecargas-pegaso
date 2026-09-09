@@ -9,24 +9,37 @@ import android.location.LocationManager
 import android.os.Looper
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -40,6 +53,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -50,6 +65,9 @@ import com.autorecargaspegaso.domain.Charger
 import com.autorecargaspegaso.domain.ConnectorType
 import com.autorecargaspegaso.feature.chargerdetail.ChargerDetailContent
 import org.osmdroid.config.Configuration
+import org.osmdroid.events.MapListener
+import org.osmdroid.events.ScrollEvent
+import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
@@ -71,6 +89,7 @@ import java.io.File
 fun MapScreen(
     viewModel: MapViewModel,
     onOpenQrScanner: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -89,6 +108,19 @@ fun MapScreen(
 
     var mapCenter by remember { mutableStateOf(MADRID_LATITUDE to MADRID_LONGITUDE) }
     var myLocation by remember { mutableStateOf<Pair<Double, Double>?>(null) }
+    var searchedPlace by remember { mutableStateOf<SearchFocus?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
+    var showListView by remember { mutableStateOf(false) }
+
+    // Recarga automática al mover el mapa (pan/zoom) — con un pequeño
+    // debounce para no disparar una petición por cada fotograma del gesto,
+    // solo cuando el usuario deja de mover el mapa.
+    var pendingAreaQuery by remember { mutableStateOf<Triple<Double, Double, Double>?>(null) }
+    LaunchedEffect(pendingAreaQuery) {
+        val query = pendingAreaQuery ?: return@LaunchedEffect
+        kotlinx.coroutines.delay(700)
+        viewModel.refreshArea(query.first, query.second, query.third)
+    }
 
     LaunchedEffect(Unit) {
         if (!hasLocationPermission) locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -98,17 +130,40 @@ fun MapScreen(
             requestCurrentLocation(context) { latitude, longitude ->
                 mapCenter = latitude to longitude
                 myLocation = latitude to longitude
-                viewModel.loadNearby(latitude, longitude)
+                pendingAreaQuery = null
+                viewModel.loadNearbyDefault(latitude, longitude)
             }
+        }
+    }
+    LaunchedEffect(viewModel) {
+        viewModel.searchFocusEvents.collect { focus ->
+            mapCenter = focus.latitude to focus.longitude
+            searchedPlace = focus
+            pendingAreaQuery = null
         }
     }
 
     Scaffold(
         modifier = modifier,
-        topBar = { CenterAlignedTopAppBar(title = { Text("AutoRecargas Pegaso") }) },
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text(stringResource(R.string.map_title)) },
+                actions = {
+                    IconButton(onClick = { showListView = !showListView }) {
+                        Icon(
+                            if (showListView) Icons.Filled.Map else Icons.AutoMirrored.Filled.List,
+                            contentDescription = stringResource(R.string.map_toggle_list_action),
+                        )
+                    }
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Filled.Settings, contentDescription = null)
+                    }
+                },
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = onOpenQrScanner) {
-                Icon(Icons.Filled.QrCodeScanner, contentDescription = "Escanear cargador")
+                Icon(Icons.Filled.QrCodeScanner, contentDescription = stringResource(R.string.map_qr_scan_action))
             }
         },
     ) { padding ->
@@ -117,18 +172,49 @@ fun MapScreen(
             is MapUiState.Error -> ErrorContent(current.message, padding)
             is MapUiState.Success -> {
                 Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-                    FilterRow(filters = current.filters, onToggleConnector = viewModel::toggleConnectorType, onToggleMinPower = viewModel::toggleMinPower)
-                    OsmMapView(
-                        chargers = current.visibleChargers,
-                        center = mapCenter,
-                        myLocation = myLocation,
-                        onChargerClick = viewModel::selectCharger,
-                        // .weight(1f), no fillMaxSize(): dentro de una Column sin peso,
-                        // la vista nativa del mapa reclamaba toda la altura disponible
-                        // y se dibujaba encima de los chips de filtro (bug real,
-                        // detectado en dispositivo).
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                    if (current.isRefreshing) {
+                        androidx.compose.material3.LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    }
+                    SearchBar(
+                        query = searchQuery,
+                        onQueryChange = { searchQuery = it },
+                        onSearch = { viewModel.search(searchQuery) },
+                        searching = current.searching,
                     )
+                    current.searchError?.let { error ->
+                        Snackbar(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                            action = { Text(stringResource(R.string.map_dismiss_action), modifier = Modifier.padding(4.dp)) },
+                        ) { Text(error) }
+                    }
+                    FilterRow(filters = current.filters, onToggleConnector = viewModel::toggleConnectorType, onToggleMinPower = viewModel::toggleMinPower)
+
+                    Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                        if (showListView) {
+                            ChargerListByDistance(
+                                chargers = current.visibleChargers,
+                                referenceLatitude = mapCenter.first,
+                                referenceLongitude = mapCenter.second,
+                                onChargerClick = viewModel::selectCharger,
+                            )
+                        } else {
+                            OsmMapView(
+                                chargers = current.visibleChargers,
+                                center = mapCenter,
+                                myLocation = myLocation,
+                                searchedPlace = searchedPlace,
+                                onChargerClick = viewModel::selectCharger,
+                                onMapMoved = { latitude, longitude, distanceKm ->
+                                    pendingAreaQuery = Triple(latitude, longitude, distanceKm)
+                                },
+                                // .weight(1f) en el Box contenedor, no fillMaxSize() aquí:
+                                // dentro de una Column sin peso, la vista nativa del mapa
+                                // reclamaba toda la altura disponible y se dibujaba encima
+                                // de los chips de filtro (bug real, detectado en dispositivo).
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
+                    }
                 }
 
                 current.selected?.let { selected ->
@@ -146,6 +232,35 @@ fun MapScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    searching: Boolean,
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        placeholder = { Text(stringResource(R.string.map_search_placeholder)) },
+        singleLine = true,
+        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+        trailingIcon = {
+            if (searching) {
+                CircularProgressIndicator(modifier = Modifier.padding(12.dp))
+            } else {
+                IconButton(onClick = { /* centrar en mi ubicación de nuevo */ }) {
+                    Icon(Icons.Filled.MyLocation, contentDescription = stringResource(R.string.map_locate_me_action))
+                }
+            }
+        },
+        keyboardActions = KeyboardActions(onSearch = { onSearch() }),
+        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = ImeAction.Search),
+    )
+}
+
 @Composable
 private fun FilterRow(
     filters: ChargerFilters,
@@ -154,30 +269,81 @@ private fun FilterRow(
 ) {
     LazyRow(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item {
             FilterChip(
                 selected = ConnectorType.TYPE_2 in filters.connectorTypes,
                 onClick = { onToggleConnector(ConnectorType.TYPE_2) },
-                label = { Text("Tipo 2") },
+                label = { Text(stringResource(R.string.map_filter_connector_type2)) },
             )
         }
         item {
             FilterChip(
                 selected = ConnectorType.CCS in filters.connectorTypes,
                 onClick = { onToggleConnector(ConnectorType.CCS) },
-                label = { Text("CCS") },
+                label = { Text(stringResource(R.string.map_filter_connector_ccs)) },
             )
         }
         item {
             FilterChip(
                 selected = filters.minPowerKw == 50.0,
                 onClick = { onToggleMinPower(50.0) },
-                label = { Text("≥ 50 kW") },
+                label = { Text(stringResource(R.string.map_filter_min_power)) },
             )
         }
     }
+}
+
+/** Lista de cargadores ordenada por distancia al centro actual del mapa (a petición del usuario). */
+@Composable
+private fun ChargerListByDistance(
+    chargers: List<Charger>,
+    referenceLatitude: Double,
+    referenceLongitude: Double,
+    onChargerClick: (Charger) -> Unit,
+) {
+    val sorted = remember(chargers, referenceLatitude, referenceLongitude) {
+        chargers
+            .map { it to distanceMeters(referenceLatitude, referenceLongitude, it.latitude, it.longitude) }
+            .sortedBy { it.second }
+    }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        items(sorted, key = { it.first.id }) { (charger, distance) ->
+            Card(onClick = { onChargerClick(charger) }, modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(text = charger.name, style = MaterialTheme.typography.titleLarge)
+                    charger.operatorDisplayName?.let {
+                        Text(text = it, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
+                    }
+                    charger.address?.let { Text(text = it, style = MaterialTheme.typography.bodyLarge) }
+                    Text(text = formatDistance(distance), style = MaterialTheme.typography.bodyLarge)
+                }
+            }
+        }
+    }
+}
+
+private fun formatDistance(meters: Double): String = if (meters < 1000) {
+    "${meters.toInt()} m"
+} else {
+    "%.1f km".format(meters / 1000.0)
+}
+
+/** Fórmula de Haversine — distancia en metros entre dos puntos geográficos. */
+private fun distanceMeters(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+    val earthRadiusMeters = 6371000.0
+    val dLat = Math.toRadians(lat2 - lat1)
+    val dLon = Math.toRadians(lon2 - lon1)
+    val a = kotlin.math.sin(dLat / 2).let { it * it } +
+        kotlin.math.cos(Math.toRadians(lat1)) * kotlin.math.cos(Math.toRadians(lat2)) *
+        kotlin.math.sin(dLon / 2).let { it * it }
+    val c = 2 * kotlin.math.atan2(kotlin.math.sqrt(a), kotlin.math.sqrt(1 - a))
+    return earthRadiusMeters * c
 }
 
 @Composable
@@ -190,7 +356,7 @@ private fun LoadingContent(padding: PaddingValues) {
 @Composable
 private fun ErrorContent(message: String, padding: PaddingValues) {
     Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-        Text("No se han podido cargar los cargadores: $message")
+        Text(stringResource(R.string.map_error_loading, message))
     }
 }
 
@@ -202,11 +368,15 @@ private fun OsmMapView(
     chargers: List<Charger>,
     center: Pair<Double, Double>,
     myLocation: Pair<Double, Double>?,
+    searchedPlace: SearchFocus?,
     onChargerClick: (Charger) -> Unit,
+    onMapMoved: (Double, Double, Double) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val myLocationLabel = stringResource(R.string.map_my_location_label)
     val myLocationIcon = remember { createDotDrawable(context, fillColor = 0xFF2E7DFF.toInt()) }
+    val searchedPlaceIcon = remember { createDotDrawable(context, fillColor = 0xFF22B573.toInt()) }
     val mapView = remember {
         MapView(context).apply {
             setTileSource(TileSourceFactory.MAPNIK)
@@ -231,12 +401,31 @@ private fun OsmMapView(
         }
     }
 
-    // Zoom de acercamiento (CLAUDE.md sección 2) solo cuando el centro es
-    // una ubicación real del GPS, no el respaldo fijo de Madrid.
-    LaunchedEffect(center, myLocation != null) {
+    // Detecta que el usuario ha movido el mapa a mano (pan/zoom) para
+    // ofrecer "Buscar en esta zona" — no se recarga sola en cada gesto.
+    DisposableEffect(mapView) {
+        val listener = object : MapListener {
+            override fun onScroll(event: ScrollEvent?): Boolean {
+                reportMapMoved(mapView, onMapMoved)
+                return false
+            }
+
+            override fun onZoom(event: ZoomEvent?): Boolean {
+                reportMapMoved(mapView, onMapMoved)
+                return false
+            }
+        }
+        mapView.addMapListener(listener)
+        onDispose { mapView.removeMapListener(listener) }
+    }
+
+    // Zoom de acercamiento (CLAUDE.md sección 2) cuando el centro es una
+    // ubicación real (GPS o resultado de búsqueda), no el respaldo fijo de
+    // Madrid.
+    LaunchedEffect(center, myLocation != null, searchedPlace) {
         mapView.controller.animateTo(
             GeoPoint(center.first, center.second),
-            if (myLocation != null) MY_LOCATION_ZOOM else DEFAULT_ZOOM,
+            if (myLocation != null || searchedPlace != null) MY_LOCATION_ZOOM else DEFAULT_ZOOM,
             null,
         )
     }
@@ -250,11 +439,21 @@ private fun OsmMapView(
             myLocation?.let { (latitude, longitude) ->
                 val meMarker = Marker(view).apply {
                     position = GeoPoint(latitude, longitude)
-                    title = "Yo"
+                    title = myLocationLabel
                     icon = myLocationIcon
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                 }
                 view.overlays.add(meMarker)
+            }
+
+            searchedPlace?.let { place ->
+                val searchMarker = Marker(view).apply {
+                    position = GeoPoint(place.latitude, place.longitude)
+                    title = place.label
+                    icon = searchedPlaceIcon
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                }
+                view.overlays.add(searchMarker)
             }
 
             chargers.forEach { charger ->
@@ -269,6 +468,14 @@ private fun OsmMapView(
             view.invalidate()
         },
     )
+}
+
+private fun reportMapMoved(mapView: MapView, onMapMoved: (Double, Double, Double) -> Unit) {
+    val center = mapView.mapCenter
+    val distanceKm = runCatching {
+        (mapView.boundingBox.diagonalLengthInMeters / 2.0 / 1000.0).coerceIn(1.0, 100.0)
+    }.getOrDefault(25.0)
+    onMapMoved(center.latitude, center.longitude, distanceKm)
 }
 
 /** Pin circular relleno de [fillColor] con borde blanco, para distinguir "Yo" de los cargadores (pin rojo por defecto de osmdroid) sin necesitar un recurso drawable aparte. */
