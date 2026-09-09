@@ -829,13 +829,44 @@ de decisión, son trabajo pendiente de `builder-android`):**
   ninguna dependencia de Play Services en toda la app. Filtros de conector
   (Tipo 2/CCS) y potencia (≥50 kW) implementados como chips sobre el mapa,
   adelantando ese punto de la fase 2 a petición del usuario.
-- Selector de idioma real: los 24 `.properties` de `docs/i18n/` no se han
-  convertido todavía a `values-<lang>/strings.xml` — los textos de la UI
-  actual están embebidos en Kotlin (violación puntual de la sección 9,
-  pendiente de corregir junto con la conversión).
-- Interpretación del contenido del QR escaneado (hoy solo cierra la
-  pantalla al leer cualquier código).
-- Icono de app real (se mantiene el genérico de la plantilla).
+- ✅ **Resuelto (2026-09-09): selector de idioma, icono, i18n e
+  interpretación de QR.**
+  - Pantalla de Ajustes con selector de idioma real, generado desde
+    `resources.assets.locales` (CLAUDE.md sección 6) — nunca una lista
+    hardcodeada — usando `AppCompatDelegate.setApplicationLocales`.
+  - Strings ES/EN externalizados a `strings.xml` en los 4 módulos con UI
+    (`app`, `feature:map`, `feature:chargerdetail`, `feature:qrscanner`).
+    **Pendiente real todavía:** convertir los 20 idiomas restantes de
+    `docs/i18n/*.properties` (ya redactados) al formato `strings.xml` — es
+    trabajo mecánico, no de diseño.
+  - Icono de app real (negro + rayo bronce, tema "Eco").
+  - QR: si el contenido escaneado es una URL http(s), se abre con el
+    mecanismo nativo de Android (resuelve app-instalada-o-navegador solo);
+    si no, aviso de "código no reconocido". Sigue sin interpretar contra
+    `ProviderDirectory` por dominio — ninguna red tiene todavía un enlace
+    universal confirmado (sección 5).
+- ✅ **Resuelto (2026-09-09): cargadores ocultos por operador sin mapear.**
+  `ChargerMapper` descartaba en silencio cualquier cargador cuyo operador
+  de OCM no estuviera en `OcmOperatorMapping` — en la práctica, la mayoría
+  de cargadores reales de una zona desaparecían sin ningún error visible
+  (detectado en pruebas reales, A Coruña). Ahora se muestran todos, con el
+  nombre real del operador (`Charger.operatorDisplayName`) aunque el
+  lanzador todavía no sepa abrir su app (aviso al usuario en ese caso, en
+  vez de fallar en silencio).
+- ✅ **Resuelto (2026-09-09): consistencia y radio de búsqueda del mapa.**
+  El límite fijo de 100 resultados de OCM truncaba de forma no determinista
+  zonas con muchos cargadores (mismos parámetros, resultados distintos
+  cada vez) — ahora escala con el radio consultado. La vista por defecto ya
+  no usa un radio fijo: empieza en 5 km y amplía (10/25/50/100/200) hasta
+  encontrar el primer cargador, con +1 km de margen para que no quede en el
+  borde del mapa.
+- ✅ **Resuelto (2026-09-09): vista de lista por distancia.** Alternable con
+  el mapa desde la barra superior, ordenada por distancia real (Haversine)
+  al centro actual del mapa.
+- ✅ **Resuelto (2026-09-09): buscador con recarga automática.** El
+  buscador de dirección/ciudad pinta un marcador en el lugar encontrado; al
+  mover o hacer zoom en el mapa, el área se recarga sola (debounce de
+  700 ms) — ya no hace falta pulsar un botón "buscar en esta zona".
 
 Ya no hay pendientes 🔶 de decisión del product owner sobre el alcance — lo
 que queda de la lista original es ejecución:
