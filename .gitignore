@@ -1,0 +1,23 @@
+# Android
+android/**/build/
+android/.gradle/
+android/local.properties
+android/.idea/
+android/*.iml
+android/captures/
+android/.cxx/
+
+# iOS
+ios/**/.build/
+ios/**/DerivedData/
+ios/**/*.xcuserstate
+ios/**/xcuserdata/
+ios/**/.swiftpm/
+
+# OS / editores
+.DS_Store
+Thumbs.db
+*.log
+
+# scripts de instalación descargados por accidente en la raíz
+*.cmd
