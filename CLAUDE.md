@@ -771,8 +771,34 @@ compila de verdad, cerrando el hueco de no poder hacerlo en local.
 
 ## 12. Próximos pasos inmediatos
 
-Ya no hay pendientes 🔶 de decisión del product owner — lo que queda es
-ejecución:
+**Estado (2026-09-09): scaffold Android real, verificado con `assembleDebug`
+y `testDebugUnitTest` en verde** — 9 módulos Gradle (`app`,
+`core:{common,domain,network,ui}`, `feature:{map,chargerdetail,qrscanner,
+applauncher}`), integración real con Open Charge Map, `ChargerAppLauncher`
+con la regla de resolución sin selector cubierta por tests unitarios reales,
+`ProviderDirectory`/`RoamingPartnerships` poblados desde `docs/providers/`.
+Repo en `https://github.com/pegasojavi/autorecargas-pegaso`.
+
+**Fast-follows explícitamente diferidos en este scaffold (no son pendientes
+de decisión, son trabajo pendiente de `builder-android`):**
+- Hilt: se usa composición manual (`AppContainer`) porque no se pudo fijar
+  con confianza una versión de KSP compatible con AGP 9.0.1/Kotlin 2.3.20
+  sin poder probarlo — migrar cuando se confirme la combinación correcta.
+- Mapa interactivo real (Google Maps Compose + pines): `feature:map` hoy
+  muestra una lista, no un mapa — hace falta una API key de Maps que no se
+  ha dado de alta todavía.
+- Geolocalización real: coordenada fija (Madrid) en vez de
+  `FusedLocationProviderClient` + permiso en runtime.
+- Selector de idioma real: los 24 `.properties` de `docs/i18n/` no se han
+  convertido todavía a `values-<lang>/strings.xml` — los textos de la UI
+  actual están embebidos en Kotlin (violación puntual de la sección 9,
+  pendiente de corregir junto con la conversión).
+- Interpretación del contenido del QR escaneado (hoy solo cierra la
+  pantalla al leer cualquier código).
+- Icono de app real (se mantiene el genérico de la plantilla).
+
+Ya no hay pendientes 🔶 de decisión del product owner sobre el alcance — lo
+que queda de la lista original es ejecución:
 
 1. `researcher-android` y `researcher-ios` documentan primero Ionity,
    Tesla y Fastned (confirmadas para el MVP) en `docs/providers/<red>.md`,
