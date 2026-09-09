@@ -54,11 +54,31 @@ class ChargerMapper(
         powerKw = dto.powerKw,
     )
 
+    /**
+     * Verificado contra los títulos reales de `GET /v3/referencedata`
+     * (`ConnectionTypes`) de OCM el 2026-09-09 — no adivinado. Orden
+     * importa: OCM titula el conector CCS/Combo con textos que CONTIENEN
+     * "Type 1"/"Type 2" ("CCS (Type 1)", "CCS (Type 2)") porque el Combo
+     * añade pines DC a la carcasa de un Type 1/2 — comprobar "Type X" antes
+     * que "CCS" clasificaba un Combo 2 de 100 kW como Tipo 2 AC (nunca pasa
+     * de ~22 kW en la práctica; bug real detectado en dispositivo). Los
+     * conectores DC (CCS/CHAdeMO/Tesla) se comprueban primero.
+     */
     private fun mapConnectorType(title: String?): ConnectorType = when {
         title == null -> ConnectorType.UNKNOWN
-        title.contains("Type 2", ignoreCase = true) -> ConnectorType.TYPE_2
-        title.contains("CCS", ignoreCase = true) -> ConnectorType.CCS
+        title.contains("CCS", ignoreCase = true) && title.contains("Type 1", ignoreCase = true) -> ConnectorType.CCS1
+        title.contains("CCS", ignoreCase = true) -> ConnectorType.CCS2 // "CCS (Type 2)" y variantes genéricas "CCS"/"Combo"
+        title.contains("Combo", ignoreCase = true) -> ConnectorType.CCS2
         title.contains("CHAdeMO", ignoreCase = true) -> ConnectorType.CHADEMO
+        title.contains("Tesla", ignoreCase = true) || title.contains("NACS", ignoreCase = true) -> ConnectorType.TESLA
+        title.contains("Wireless", ignoreCase = true) -> ConnectorType.WIRELESS
+        title.contains("Schuko", ignoreCase = true) ||
+            title.contains("CEE 7", ignoreCase = true) ||
+            title.contains("Domestic", ignoreCase = true) ||
+            title.contains("BS1363", ignoreCase = true) -> ConnectorType.DOMESTIC
+        title.contains("Type 3", ignoreCase = true) || title.contains("SCAME", ignoreCase = true) -> ConnectorType.TYPE_3
+        title.contains("Type 2", ignoreCase = true) -> ConnectorType.TYPE_2
+        title.contains("Type 1", ignoreCase = true) -> ConnectorType.TYPE_1
         else -> ConnectorType.UNKNOWN
     }
 }

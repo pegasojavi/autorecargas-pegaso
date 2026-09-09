@@ -2,8 +2,14 @@
 <resources>
     <string name="chargerdetail_open_app_action">Open app</string>
     <string name="chargerdetail_get_directions_action">Directions</string>
+    <string name="chargerdetail_connector_type1">Type 1</string>
     <string name="chargerdetail_connector_type2">Type 2</string>
-    <string name="chargerdetail_connector_ccs">CCS</string>
+    <string name="chargerdetail_connector_type3">Type 3</string>
+    <string name="chargerdetail_connector_ccs1">CCS1</string>
+    <string name="chargerdetail_connector_ccs2">CCS2</string>
     <string name="chargerdetail_connector_chademo">CHAdeMO</string>
+    <string name="chargerdetail_connector_tesla">Tesla</string>
+    <string name="chargerdetail_connector_domestic">Domestic socket</string>
+    <string name="chargerdetail_connector_wireless">Wireless</string>
     <string name="chargerdetail_connector_unknown">Connector</string>
 </resources>

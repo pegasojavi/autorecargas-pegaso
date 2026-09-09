@@ -261,6 +261,19 @@ private fun SearchBar(
     )
 }
 
+/** Los 9 tipos de conector relevantes en Europa (CLAUDE.md/domain.ConnectorType) — UNKNOWN queda fuera, es un cajón de sastre interno, no una categoría que el usuario elija. */
+private val FILTERABLE_CONNECTOR_TYPES = listOf(
+    ConnectorType.TYPE_1,
+    ConnectorType.TYPE_2,
+    ConnectorType.TYPE_3,
+    ConnectorType.CCS1,
+    ConnectorType.CCS2,
+    ConnectorType.CHADEMO,
+    ConnectorType.TESLA,
+    ConnectorType.DOMESTIC,
+    ConnectorType.WIRELESS,
+)
+
 @Composable
 private fun FilterRow(
     filters: ChargerFilters,
@@ -271,18 +284,11 @@ private fun FilterRow(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        item {
+        items(FILTERABLE_CONNECTOR_TYPES) { type ->
             FilterChip(
-                selected = ConnectorType.TYPE_2 in filters.connectorTypes,
-                onClick = { onToggleConnector(ConnectorType.TYPE_2) },
-                label = { Text(stringResource(R.string.map_filter_connector_type2)) },
-            )
-        }
-        item {
-            FilterChip(
-                selected = ConnectorType.CCS in filters.connectorTypes,
-                onClick = { onToggleConnector(ConnectorType.CCS) },
-                label = { Text(stringResource(R.string.map_filter_connector_ccs)) },
+                selected = type in filters.connectorTypes,
+                onClick = { onToggleConnector(type) },
+                label = { Text(connectorTypeLabel(type)) },
             )
         }
         item {
@@ -293,6 +299,20 @@ private fun FilterRow(
             )
         }
     }
+}
+
+@Composable
+private fun connectorTypeLabel(type: ConnectorType): String = when (type) {
+    ConnectorType.TYPE_1 -> stringResource(R.string.map_filter_connector_type1)
+    ConnectorType.TYPE_2 -> stringResource(R.string.map_filter_connector_type2)
+    ConnectorType.TYPE_3 -> stringResource(R.string.map_filter_connector_type3)
+    ConnectorType.CCS1 -> stringResource(R.string.map_filter_connector_ccs1)
+    ConnectorType.CCS2 -> stringResource(R.string.map_filter_connector_ccs2)
+    ConnectorType.CHADEMO -> stringResource(R.string.map_filter_connector_chademo)
+    ConnectorType.TESLA -> stringResource(R.string.map_filter_connector_tesla)
+    ConnectorType.DOMESTIC -> stringResource(R.string.map_filter_connector_domestic)
+    ConnectorType.WIRELESS -> stringResource(R.string.map_filter_connector_wireless)
+    ConnectorType.UNKNOWN -> stringResource(R.string.map_filter_connector_unknown)
 }
 
 /** Lista de cargadores ordenada por distancia al centro actual del mapa (a petición del usuario). */
@@ -401,17 +421,23 @@ private fun OsmMapView(
         }
     }
 
-    // Detecta que el usuario ha movido el mapa a mano (pan/zoom) para
-    // ofrecer "Buscar en esta zona" — no se recarga sola en cada gesto.
+    // Movimiento de cámara en curso por programación nuestra (no gesto del
+    // usuario) — mientras esté activo, se ignoran los scroll/zoom que
+    // genera la propia animación, para no disparar recargas automáticas
+    // sobre nuestro propio movimiento (bucle real detectado: la animación
+    // de "centrar en mi ubicación" generaba eventos de scroll que a su vez
+    // programaban un "buscar en esta zona" automático).
+    var isProgrammaticCameraMove by remember { mutableStateOf(false) }
+
     DisposableEffect(mapView) {
         val listener = object : MapListener {
             override fun onScroll(event: ScrollEvent?): Boolean {
-                reportMapMoved(mapView, onMapMoved)
+                if (!isProgrammaticCameraMove) reportMapMoved(mapView, onMapMoved)
                 return false
             }
 
             override fun onZoom(event: ZoomEvent?): Boolean {
-                reportMapMoved(mapView, onMapMoved)
+                if (!isProgrammaticCameraMove) reportMapMoved(mapView, onMapMoved)
                 return false
             }
         }
@@ -422,12 +448,22 @@ private fun OsmMapView(
     // Zoom de acercamiento (CLAUDE.md sección 2) cuando el centro es una
     // ubicación real (GPS o resultado de búsqueda), no el respaldo fijo de
     // Madrid.
+    //
+    // `mapView.post { ... }`: si se posiciona la cámara antes de que la
+    // vista tenga un tamaño real asignado (layout todavía no ejecutado),
+    // osmdroid calcula la proyección con dimensiones 0x0 y el resultado es
+    // un zoom incorrecto (se veía media España en vez de la calle) o un
+    // parpadeo al recalcular más tarde — bug real detectado en dispositivo.
+    // `post` garantiza que el layout ya se ha completado.
     LaunchedEffect(center, myLocation != null, searchedPlace) {
-        mapView.controller.animateTo(
-            GeoPoint(center.first, center.second),
-            if (myLocation != null || searchedPlace != null) MY_LOCATION_ZOOM else DEFAULT_ZOOM,
-            null,
-        )
+        val zoom = if (myLocation != null || searchedPlace != null) MY_LOCATION_ZOOM else DEFAULT_ZOOM
+        isProgrammaticCameraMove = true
+        mapView.post {
+            mapView.controller.setZoom(zoom)
+            mapView.controller.animateTo(GeoPoint(center.first, center.second))
+        }
+        kotlinx.coroutines.delay(600)
+        isProgrammaticCameraMove = false
     }
 
     AndroidView(

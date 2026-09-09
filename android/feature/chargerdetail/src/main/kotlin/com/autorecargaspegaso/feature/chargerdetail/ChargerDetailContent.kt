@@ -65,9 +65,15 @@ fun ChargerDetailContent(
 @Composable
 private fun connectorLabel(connector: Connector): String {
     val type = when (connector.type) {
+        ConnectorType.TYPE_1 -> stringResource(R.string.chargerdetail_connector_type1)
         ConnectorType.TYPE_2 -> stringResource(R.string.chargerdetail_connector_type2)
-        ConnectorType.CCS -> stringResource(R.string.chargerdetail_connector_ccs)
+        ConnectorType.TYPE_3 -> stringResource(R.string.chargerdetail_connector_type3)
+        ConnectorType.CCS1 -> stringResource(R.string.chargerdetail_connector_ccs1)
+        ConnectorType.CCS2 -> stringResource(R.string.chargerdetail_connector_ccs2)
         ConnectorType.CHADEMO -> stringResource(R.string.chargerdetail_connector_chademo)
+        ConnectorType.TESLA -> stringResource(R.string.chargerdetail_connector_tesla)
+        ConnectorType.DOMESTIC -> stringResource(R.string.chargerdetail_connector_domestic)
+        ConnectorType.WIRELESS -> stringResource(R.string.chargerdetail_connector_wireless)
         ConnectorType.UNKNOWN -> stringResource(R.string.chargerdetail_connector_unknown)
     }
     val power = connector.powerKw?.let { " · ${it.toInt()} kW" }.orEmpty()
@@ -85,7 +91,7 @@ private fun ChargerDetailContentPreview() {
                 latitude = 40.0,
                 longitude = -3.0,
                 address = "Autovía A-2, km 45",
-                connectors = listOf(Connector(ConnectorType.CCS, 350.0)),
+                connectors = listOf(Connector(ConnectorType.CCS2, 350.0)),
                 nativeProviderId = "ionity",
             ),
             onOpenApp = {},

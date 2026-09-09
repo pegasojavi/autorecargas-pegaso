@@ -1,10 +1,25 @@
 package com.autorecargaspegaso.domain
 
-/** Tipo de conector físico del cargador (ampliar según lo que exponga OCM). */
+/**
+ * Tipo de conector físico del cargador. Los 9 tipos relevantes en Europa
+ * (a petición del usuario), verificados contra la lista real de
+ * `ConnectionTypes` de Open Charge Map (`GET /v3/referencedata`) — OCM
+ * distingue explícitamente CCS de Type 1 y de Type 2 (p. ej. "CCS (Type 2)"
+ * como título propio), así que CCS1/CCS2 se mapean por separado, no como un
+ * único "CCS" genérico. [UNKNOWN] es un cajón de sastre interno (conectores
+ * fuera de Europa como NEMA/GB-T/AS 3112, o sin dato) — no se muestra como
+ * chip de filtro propio.
+ */
 enum class ConnectorType {
+    TYPE_1,
     TYPE_2,
-    CCS,
+    TYPE_3,
+    CCS1,
+    CCS2,
     CHADEMO,
+    TESLA,
+    DOMESTIC,
+    WIRELESS,
     UNKNOWN,
 }
 

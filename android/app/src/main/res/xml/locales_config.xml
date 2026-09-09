@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Lista declarada de idiomas soportados (CLAUDE.md sección 6).
+
+  Por qué existe este fichero en vez de leer `resources.assets.locales`
+  directamente (que era el plan original): `assets.locales` devuelve TODOS
+  los locales para los que existe algún recurso en el APK final, incluidos
+  los que traen las propias librerías (AppCompat/Material traducen sus
+  textos internos — "OK", "Cancelar", etc. — a 60-90 idiomas) aunque
+  nosotros no hayamos traducido nada nuestro a esos idiomas. Sin este
+  fichero, el selector mostraba "el listado completo de los del mundo"
+  (bug real detectado en dispositivo).
+
+  `LocaleManagerCompat.getApplicationSupportedLocales()` sí lee
+  exactamente esta lista (vía `android:localeConfig` en el manifest),
+  compatible con versiones antiguas de Android. Sigue siendo una única
+  fuente de verdad declarativa, no una lista dentro del código Kotlin:
+  añadir un idioma nuevo es añadir aquí una línea + su
+  `values-<lang>/strings.xml`, nada más.
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="es" />
+</locale-config>

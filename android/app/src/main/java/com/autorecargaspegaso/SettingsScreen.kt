@@ -24,25 +24,47 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.os.LocaleListCompat
+import org.xmlpull.v1.XmlPullParser
 import java.util.Locale
 
 /**
- * Selector de idioma (CLAUDE.md sección 6): el desplegable se genera solo a
- * partir de los ficheros de traducción realmente empaquetados
- * (`resources.assets.locales`), nunca de una lista escrita a mano — así no
- * se puede desincronizar de los idiomas que la app tiene de verdad.
+ * Selector de idioma (CLAUDE.md sección 6): el desplegable se genera
+ * parseando directamente `res/xml/locales_config.xml`, no desde
+ * `resources.assets.locales` como se planteó originalmente — esa API
+ * devuelve TODOS los locales para los que hay algún recurso en el APK
+ * final, incluidos los que traen las propias librerías (AppCompat/Material
+ * traducen sus textos internos a 60-90 idiomas), no solo los nuestros. Con
+ * eso el selector mostraba el listado completo de idiomas del mundo (bug
+ * real detectado en dispositivo). No se usa `LocaleManagerCompat` porque
+ * esa clase (androidx.core 1.18.0) solo expone `getSystemLocales`/
+ * `getApplicationLocales` — no existe ningún `getApplicationSupportedLocales`
+ * que lea el `locale-config` declarado, así que hay que parsear el XML a
+ * mano. `locales_config.xml` sigue siendo una única fuente de verdad
+ * declarativa — añadir un idioma es añadir una línea ahí más su
+ * `values-<lang>/strings.xml`, no tocar este código.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
 
-    val availableLocales = remember {
-        context.assets.locales
-            .filter { it.isNotBlank() && it != "und" }
-            .mapNotNull { tag -> runCatching { Locale.forLanguageTag(tag) }.getOrNull() }
-            .distinctBy { it.toLanguageTag() }
-            .sortedBy { it.getDisplayName(it) }
+    val availableLocales: List<Locale> = remember {
+        val result = mutableListOf<Locale>()
+        val parser = context.resources.getXml(R.xml.locales_config)
+        try {
+            var eventType = parser.eventType
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+                if (eventType == XmlPullParser.START_TAG && parser.name == "locale") {
+                    val tag = parser.getAttributeValue(ANDROID_XML_NAMESPACE, "name")
+                    if (tag != null) result.add(Locale.forLanguageTag(tag))
+                }
+                eventType = parser.next()
+            }
+        } finally {
+            parser.close()
+        }
+        result.distinctBy { locale: Locale -> locale.toLanguageTag() }
+            .sortedBy { locale: Locale -> locale.getDisplayName(locale) }
     }
 
     var selectedTag by remember {
@@ -86,3 +108,5 @@ fun SettingsScreen(onBack: () -> Unit) {
         }
     }
 }
+
+private const val ANDROID_XML_NAMESPACE = "http://schemas.android.com/apk/res/android"

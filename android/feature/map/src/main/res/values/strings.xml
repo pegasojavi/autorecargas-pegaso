@@ -5,8 +5,16 @@
     <string name="map_search_placeholder">Search address or city</string>
     <string name="map_locate_me_action">Center on my location</string>
     <string name="map_search_this_area">Search this area</string>
+    <string name="map_filter_connector_type1">Type 1</string>
     <string name="map_filter_connector_type2">Type 2</string>
-    <string name="map_filter_connector_ccs">CCS</string>
+    <string name="map_filter_connector_type3">Type 3</string>
+    <string name="map_filter_connector_ccs1">CCS1</string>
+    <string name="map_filter_connector_ccs2">CCS2</string>
+    <string name="map_filter_connector_chademo">CHAdeMO</string>
+    <string name="map_filter_connector_tesla">Tesla</string>
+    <string name="map_filter_connector_domestic">Domestic socket</string>
+    <string name="map_filter_connector_wireless">Wireless</string>
+    <string name="map_filter_connector_unknown">Other</string>
     <string name="map_filter_min_power">≥ 50 kW</string>
     <string name="map_qr_scan_action">Scan charger</string>
     <string name="map_error_loading">Couldn\'t load chargers: %1$s</string>

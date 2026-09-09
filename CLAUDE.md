@@ -513,10 +513,25 @@ el desplegable de idiomas de la app debe mostrar exactamente **una línea
 por fichero de traducción que exista** — nunca una lista escrita a mano en
 el código, que podría desincronizarse de los ficheros reales. Cada
 plataforma ya expone una API nativa para esto:
-- **Android:** `context.resources.assets.locales` (`AssetManager`) devuelve
-  exactamente los locales para los que hay recursos empaquetados en el APK.
-  Mostrar cada idioma con su autónimo (`locale.getDisplayName(locale)` —
-  p. ej. "Español", "Français" — no traducido al idioma actual de la UI).
+- **Android:** ⚠️ **corregido 2026-09-09** — `context.resources.assets.locales`
+  (`AssetManager`) NO sirve para esto en la práctica: devuelve todos los
+  locales para los que existe CUALQUIER recurso en el APK final, incluidos
+  los que traen las propias librerías (AppCompat/Material traducen sus
+  textos internos a 60-90 idiomas), no solo los que traducimos nosotros —
+  bug real detectado en dispositivo ("aparece el listado completo de
+  idiomas del mundo"). La fuente de verdad real es
+  `res/xml/locales_config.xml` (declarado también en el manifest vía
+  `android:localeConfig`, que es el mecanismo estándar de Android 13+ para
+  "idiomas soportados por esta app") — sigue siendo un fichero declarativo
+  aparte del código (añadir un idioma = añadir una línea ahí + su
+  `values-<lang>/strings.xml`), pero se lee parseando ese XML directamente
+  con un `XmlPullParser`, no con una API de una línea: no existe ningún
+  método en `androidx.core` (`core` 1.18.0) que devuelva la lista de
+  locales declarados en el `locale-config` (`LocaleManagerCompat` solo
+  expone `getSystemLocales`/`getApplicationLocales`, no
+  `getApplicationSupportedLocales`). Mostrar cada idioma con su autónimo
+  (`locale.getDisplayName(locale)` — p. ej. "Español", "Français" — no
+  traducido al idioma actual de la UI).
 - **iOS:** `Bundle.main.localizations` devuelve exactamente los locales para
   los que hay una carpeta `.lproj` en el bundle (filtrar el pseudo-locale
   `"Base"` si se usa Base internationalization). Mostrar el autónimo de cada
@@ -867,6 +882,59 @@ de decisión, son trabajo pendiente de `builder-android`):**
   buscador de dirección/ciudad pinta un marcador en el lugar encontrado; al
   mover o hacer zoom en el mapa, el área se recarga sola (debounce de
   700 ms) — ya no hace falta pulsar un botón "buscar en esta zona".
+- ✅ **Resuelto (2026-09-09): segunda ronda de bugs reportados en
+  dispositivo real, todos corregidos (build verde con `assembleDebug` +
+  `testDebugUnitTest`):**
+  - **Parpadeo del mapa al renderizar:** `mapView.controller.setZoom()`/
+    `.animateTo()` se llamaban antes de que el `MapView` tuviera dimensiones
+    de layout reales (clásica carrera de osmdroid embebido en Compose vía
+    `AndroidView`), lo que calculaba una proyección incorrecta y producía un
+    frame visible en el zoom/posición equivocados antes de corregirse.
+    Corregido envolviendo el posicionamiento de cámara en `mapView.post { }`.
+    Además, esas animaciones programáticas disparaban ellas mismas eventos
+    `onScroll`/`onZoom` en el `MapListener`, realimentando el auto-refresco
+    del área — corregido con un flag `isProgrammaticCameraMove` que los
+    silencia mientras dura nuestra propia animación.
+  - **Filtro de tipo de conector invisible / solo 3 tipos visibles:** dos
+    causas distintas. (1) `ChargerMapper` descartaba en silencio cualquier
+    cargador cuyo operador de OCM no reconociera (ya corregido en la ronda
+    anterior, ver más abajo). (2) El propio `ConnectorType` solo modelaba 3
+    valores; ahora modela los **9 tipos reales** que aparecen en
+    `GET /v3/referencedata` de OCM (`TYPE_1`, `TYPE_2`, `TYPE_3`, `CCS1`,
+    `CCS2`, `CHADEMO`, `TESLA`, `DOMESTIC`, `WIRELESS`, más `UNKNOWN` de
+    reserva) y el filtro/ficha/lista los muestra todos.
+  - **"Combo 2 de 100 kW" se mostraba como "Tipo 2":** el título real de OCM
+    para CCS2 contiene literalmente la subcadena `"Type 2"` (p. ej.
+    `"CCS (Type 2)"`), y `mapConnectorType()` comprobaba `contains("Type 2")`
+    antes que `contains("CCS")` — corregido reordenando las comprobaciones
+    (CCS/Combo/CHAdeMO/Tesla/inalámbrico/doméstico/Type 3 siempre antes que
+    los genéricos "Type 2"/"Type 1").
+  - **Cargadores de Repsol no abrían ninguna app ("¿no es Waylet?"):**
+    Waylet (`com.mdf.repsol`) y Electromaps (`com.enredats.electromaps`)
+    estaban en `roaming.json` como apps candidatas de Zunder/Endesa X, pero
+    no existían todavía como entradas propias en `providers.json` — el
+    lanzador no podía resolverlas. Añadidas ambas (package name verificado).
+  - **Selector de idioma no aparecía / mostraba el listado completo de
+    idiomas del mundo:** `context.resources.assets.locales` devuelve todos
+    los locales para los que hay CUALQUIER recurso en el APK final,
+    incluidos los que traen las propias librerías (AppCompat/Material
+    traducen sus textos internos — "OK", "Cancelar"... — a 60-90 idiomas).
+    Corregido con `res/xml/locales_config.xml` (declara solo los idiomas
+    que traducimos de verdad: `en`, `es`) + `android:localeConfig` en el
+    manifest, leído directamente con un `XmlPullParser` sobre ese XML — no
+    existe ningún método público en `androidx.core` (`androidx.core:core`
+    1.18.0) que lea ese `locale-config` por nosotros (se intentó
+    `LocaleManagerCompat.getApplicationSupportedLocales`, que no existe en
+    esa clase; solo expone `getSystemLocales`/`getApplicationLocales`), así
+    que el parseo del XML se hace a mano en `SettingsScreen.kt`.
+  - **Elegir un idioma no traducía nada:** `MainActivity` extendía
+    `ComponentActivity` en vez de `AppCompatActivity` — el hook automático
+    de recreación de actividad que dispara
+    `AppCompatDelegate.setApplicationLocales()` solo funciona sobre
+    `AppCompatActivity`. Corregido cambiando la clase base.
+  - **No se veía el buscador de tipo de cargador (filtros tapados):** ya
+    corregido en la ronda anterior (`012963e`); confirmado que sigue
+    correcto tras esta ronda de cambios.
 
 Ya no hay pendientes 🔶 de decisión del product owner sobre el alcance — lo
 que queda de la lista original es ejecución:

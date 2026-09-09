@@ -90,6 +90,20 @@
       "androidPackage": "com.total.europe",
       "deepLinkScheme": null,
       "playStoreId": "com.total.europe"
+    },
+    {
+      "providerId": "waylet",
+      "displayName": "Waylet",
+      "androidPackage": "com.mdf.repsol",
+      "deepLinkScheme": null,
+      "playStoreId": "com.mdf.repsol"
+    },
+    {
+      "providerId": "electromaps",
+      "displayName": "Electromaps",
+      "androidPackage": "com.enredats.electromaps",
+      "deepLinkScheme": null,
+      "playStoreId": "com.enredats.electromaps"
     }
   ]
 }
