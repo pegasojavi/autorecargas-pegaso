@@ -63,8 +63,18 @@ class AndroidChargerAppLauncher(
     }
 
     private fun launchStore(provider: ProviderAppInfo) {
+        // `market://` es un esquema genérico: en fabricantes con tienda propia
+        // (Huawei AppGallery, Xiaomi GetApps, "App Mall" y similares) esa app
+        // puede registrarse también para manejarlo y ganarle a Google Play si
+        // no se fuerza el paquete explícitamente. CLAUDE.md sección 0/3 asume
+        // Google Play como tienda de referencia en Android — forzar
+        // `com.android.vending` es obligatorio, no opcional.
         val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=${provider.playStoreId}"))
+            .setPackage(GOOGLE_PLAY_PACKAGE)
         if (!safeStartActivity(marketIntent)) {
+            // Sin Google Play instalado (o si el intent anterior falla por
+            // cualquier motivo): ficha web, que abre en el navegador y no
+            // depende de qué tienda de apps tenga el fabricante por defecto.
             val webIntent = Intent(
                 Intent.ACTION_VIEW,
                 Uri.parse("https://play.google.com/store/apps/details?id=${provider.playStoreId}"),
@@ -82,5 +92,9 @@ class AndroidChargerAppLauncher(
         true
     } catch (_: ActivityNotFoundException) {
         false
+    }
+
+    private companion object {
+        const val GOOGLE_PLAY_PACKAGE = "com.android.vending"
     }
 }
