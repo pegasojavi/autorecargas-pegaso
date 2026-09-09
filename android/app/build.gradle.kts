@@ -1,7 +1,17 @@
+import java.util.Properties
+
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.compose.compiler)
   alias(libs.plugins.kotlin.serialization)
+}
+
+// Lee claves locales (CLAUDE.md sección 0/5) desde local.properties — ese
+// fichero está en .gitignore, nunca se sube. Sin él, la clave queda vacía
+// y el fallback ya documentado en AppContainer sigue aplicando.
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
 }
 
 android {
@@ -13,6 +23,12 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField(
+            "String",
+            "OCM_API_KEY",
+            "\"${localProperties.getProperty("ocm.api.key", "")}\"",
+        )
     }
 
     buildTypes {
@@ -28,7 +44,7 @@ android {
     buildFeatures {
       compose = true
       aidl = false
-      buildConfig = false
+      buildConfig = true
       shaders = false
     }
 

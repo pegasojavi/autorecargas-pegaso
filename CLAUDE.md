@@ -779,15 +779,33 @@ con la regla de resolución sin selector cubierta por tests unitarios reales,
 `ProviderDirectory`/`RoamingPartnerships` poblados desde `docs/providers/`.
 Repo en `https://github.com/pegasojavi/autorecargas-pegaso`.
 
-**⚠️ Hallazgo nuevo (2026-09-09), corrige una asunción de la sección 0/5:**
-Open Charge Map **ahora exige API key obligatoria** (`key`/`x-api-key`) en
-todas sus consultas, incluida `/v3/poi` — verificado en vivo, no es ya
-"funciona sin clave para volumen bajo" como se documentó al elegir el
-dataset. Registro gratuito en https://openchargemap.org. El código ya está
-preparado para pasarla (`OpenChargeMapApi`/`ChargerRepository`/
-`AppContainer`), pero con la clave vacía por defecto **la app no podrá
-traer ningún cargador real hasta que se dé de alta una** — no es un bug,
-es un bloqueo real de datos pendiente de esa clave.
+**⚠️ Hallazgos de integración real con OCM (2026-09-09), corrigen asunciones
+de la sección 0/5 — todos ya arreglados en el código:**
+- **API key obligatoria:** OCM exige `key`/`x-api-key` en todas sus
+  consultas, incluida `/v3/poi` — ya no "funciona sin clave para volumen
+  bajo". Clave gratuita dada de alta (app "autorecargas-pegaso" en
+  openchargemap.org), guardada en `android/local.properties` (no
+  versionado) y expuesta vía `BuildConfig.OCM_API_KEY`.
+- **`compact=true` rompía el mapeo de todos los cargadores en silencio:**
+  con ese valor (el que se había puesto por defecto) OCM devuelve
+  `OperatorInfo: null`, y `ChargerMapper` depende de `OperatorInfo.Title`
+  para saber de qué red es cada punto. Corregido a `compact=false`.
+- **Varios títulos de operador reales NO coinciden con el nombre
+  comercial obvio** — verificado contra `GET /v3/referencedata` con clave
+  real: `"Ionity"` (no "IONITY"), `"FastNed"` (N mayúscula), Tesla no tiene
+  entrada "Tesla" a secas (son `"Tesla (including non-tesla)"` /
+  `"Tesla (Tesla-only charging)"`), y **"Shell Recharge" y "TotalEnergies"
+  no existen como entrada genérica europea** — solo variantes por país
+  (`Shell Recharge Solutions (BE/DE/NL/UK)`, `TotalEnergies (ES/FR)`, etc.).
+  `OcmOperatorMapping` ya está corregido con los títulos reales — esto
+  confirma por qué la sección 5 insiste en no asumir nombres sin
+  comprobarlos contra la fuente real.
+- **Matiz de licencia:** cada registro trae su propio `DataProvider.License`
+  (ODbL en unos, "Creative Commons Attribution 4.0" en otros) — no es
+  uniformemente ODbL como se simplificó al elegir el dataset. Todos exigen
+  atribución igualmente, así que no cambia la conclusión de la sección 5,
+  pero el texto de atribución (pantalla "Acerca de/Créditos") debería
+  contemplarlo si se quiere ser estrictamente precisos por registro.
 
 **Fast-follows explícitamente diferidos en este scaffold (no son pendientes
 de decisión, son trabajo pendiente de `builder-android`):**

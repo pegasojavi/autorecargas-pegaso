@@ -6,41 +6,49 @@ package com.autorecargaspegaso.network.ocm
  * dos coincide con nuestros `providerId` internos (los slugs usados en
  * `docs/providers/` y en `ProviderDirectory`, p. ej. "ionity", "tesla").
  *
- * Esta tabla traduce de uno a otro. Solo cubre las redes ya confirmadas
- * para el MVP (CLAUDE.md sección 0) — ampliarla es tarea de
- * `researcher-android` según se activen más redes, verificando el
- * `OperatorInfo.Title` real que devuelve OCM para cada una (puede no
- * coincidir textualmente con el nombre comercial).
+ * Esta tabla traduce de uno a otro. **Verificada en vivo el 2026-09-09**
+ * contra `GET /v3/referencedata` con clave real — varios títulos NO
+ * coinciden con el nombre comercial obvio (p. ej. "FastNed" con N
+ * mayúscula, "Ionity" no en mayúsculas, Tesla sin entrada "Tesla" a secas).
+ * Varios operadores tienen varias entradas de OCM por país/marca — se
+ * mapean todas al mismo `providerId`.
  */
 object OcmOperatorMapping {
     private val titleToProviderId: Map<String, String> = mapOf(
-        // Verificados por uso/documentación directa de la app (confianza alta).
-        "IONITY" to "ionity",
-        "Tesla" to "tesla",
-        "Tesla Supercharger" to "tesla",
-        "Fastned" to "fastned",
-        "Shell Recharge" to "shell-recharge",
-
-        // ⚠️ NO VERIFICADOS contra la API real de OCM (2026-09-09): la API
-        // empezó a exigir API key (`x-api-key`/`key`) para cualquier
-        // consulta, incluida `referencedata`, y no se ha podido consultar
-        // la lista real de operadores para confirmar el `Title` exacto que
-        // usa OCM para cada uno. Son el nombre comercial más probable —
-        // `researcher-android` debe confirmarlos (y corregirlos si hace
-        // falta) en cuanto se dé de alta una clave (CLAUDE.md sección 0/5).
-        "Allego" to "allego",
-        "EnBW" to "enbw",
-        "Iberdrola" to "iberdrola",
+        "Ionity" to "ionity",
+        "Tesla (including non-tesla)" to "tesla",
+        "Tesla (Tesla-only charging)" to "tesla",
+        "FastNed" to "fastned",
+        "PlugSurfing" to "plugsurfing",
+        "Allego BV" to "allego",
+        "EnBW (D)" to "enbw",
+        "Iberdrola | BP Pulse (ES)" to "iberdrola",
         "Endesa" to "endesa-x",
+        "Enel X" to "endesa-x", // nombre previo al rebranding, algunos puntos antiguos pueden seguir así
         "Wenea" to "wenea",
         "Zunder" to "zunder",
-        "TotalEnergies" to "total-energies",
 
-        // Chargemap y Plugsurfing NO se añaden aquí a propósito: son
-        // agregadores de roaming, no operadores nativos de cargadores
-        // propios (CLAUDE.md sección 0, docs/providers/chargemap.md y
-        // plugsurfing.md) — no deben aparecer como nativeProviderId de
-        // ningún Charger de OCM.
+        // Shell Recharge: no existe una entrada genérica "Shell Recharge"
+        // en OCM — solo variantes por país/marca. Solo se listan las
+        // europeas (excluidas explícitamente las de fuera de Europa: AR,
+        // IN, Malaysia, PH, TR, Indonesia, US).
+        "Shell Recharge Solutions (BE)" to "shell-recharge",
+        "Shell Recharge Solutions (DE)" to "shell-recharge",
+        "Shell Recharge Solutions (NL)" to "shell-recharge",
+        "Shell Recharge Solutions (UK)" to "shell-recharge",
+        "Shell EV Charging Solutions France" to "shell-recharge",
+        "Shell Recharge (ES) (Cable Energia)" to "shell-recharge",
+
+        // TotalEnergies: igual que Shell, sin entrada genérica europea.
+        "TotalEnergies (ES)" to "total-energies",
+        "TotalEnergies (FR)" to "total-energies",
+        "Total Energies (UK)" to "total-energies",
+        "TOTAL Be PlugToDrive" to "total-energies",
+        "TOTAL Nl PlugToDrive" to "total-energies",
+
+        // Chargemap NO aparece en referencedata como operador nativo — confirma
+        // que es agregador de roaming puro (CLAUDE.md sección 0/5), no tiene
+        // cargadores propios en OCM. No añadir entrada aquí.
     )
 
     /**

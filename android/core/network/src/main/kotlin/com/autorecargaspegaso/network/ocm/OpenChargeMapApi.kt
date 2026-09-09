@@ -17,7 +17,11 @@ interface OpenChargeMapApi {
         @Query("distanceunit") distanceUnit: String = "KM",
         @Query("maxresults") maxResults: Int = 100,
         @Query("opendata") openDataOnly: Boolean = true,
-        @Query("compact") compact: Boolean = true,
+        // false es obligatorio (confirmado en vivo, 2026-09-09): con
+        // compact=true, OCM devuelve "OperatorInfo": null — ChargerMapper
+        // necesita OperatorInfo.Title para resolver el providerId, así que
+        // compact=true rompía el mapeo de TODOS los cargadores en silencio.
+        @Query("compact") compact: Boolean = false,
         @Query("verbose") verbose: Boolean = false,
         // Obligatoria (confirmado en vivo, 2026-09-09): OCM devuelve 403
         // sin ella en /v3/poi, ya no es "opcional para volumen bajo" como
