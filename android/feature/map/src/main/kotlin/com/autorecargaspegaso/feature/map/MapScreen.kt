@@ -120,7 +120,11 @@ fun MapScreen(
                         chargers = current.visibleChargers,
                         center = mapCenter,
                         onChargerClick = viewModel::selectCharger,
-                        modifier = Modifier.fillMaxSize(),
+                        // .weight(1f), no fillMaxSize(): dentro de una Column sin peso,
+                        // la vista nativa del mapa reclamaba toda la altura disponible
+                        // y se dibujaba encima de los chips de filtro (bug real,
+                        // detectado en dispositivo).
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
                     )
                 }
 
@@ -258,13 +262,19 @@ private fun configureOsmdroid(context: Context) {
  * GPS sin Google Play Services (`android.location.LocationManager`, no
  * `FusedLocationProviderClient`) — decisión deliberada para no depender de
  * GMS, igual que la elección de osmdroid para el mapa. Usa la última
- * posición conocida si existe (rápido); si no, pide una actualización
- * puntual y se desregistra tras la primera lectura.
+ * posición conocida si existe (rápido); si no, escucha a **todos** los
+ * proveedores disponibles a la vez (no solo GPS) y se queda con el primero
+ * que responda — en interior, o en dispositivos sin `NETWORK_PROVIDER`
+ * (algunos sin Google Play Services completo), un GPS en solitario puede
+ * tardar mucho o no dar señal; con varios proveedores en paralelo se evita
+ * depender de que uno concreto funcione.
  */
 private fun requestCurrentLocation(context: Context, onLocation: (Double, Double) -> Unit) {
     val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return
-    val providers = listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
+    val providers = listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER, LocationManager.PASSIVE_PROVIDER)
         .filter { runCatching { locationManager.isProviderEnabled(it) }.getOrDefault(false) }
+
+    if (providers.isEmpty()) return // sin ningún proveedor activo, se mantiene el centro por defecto
 
     val lastKnown = providers
         .mapNotNull { runCatching { locationManager.getLastKnownLocation(it) }.getOrNull() }
@@ -275,14 +285,18 @@ private fun requestCurrentLocation(context: Context, onLocation: (Double, Double
         return
     }
 
-    val provider = providers.firstOrNull() ?: return
+    var reported = false
     val listener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
+            if (reported) return
+            reported = true
             onLocation(location.latitude, location.longitude)
             locationManager.removeUpdates(this)
         }
     }
-    runCatching {
-        locationManager.requestLocationUpdates(provider, 0L, 0f, listener, Looper.getMainLooper())
+    providers.forEach { provider ->
+        runCatching {
+            locationManager.requestLocationUpdates(provider, 0L, 0f, listener, Looper.getMainLooper())
+        }
     }
 }
