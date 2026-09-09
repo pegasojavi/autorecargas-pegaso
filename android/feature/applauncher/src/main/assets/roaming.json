@@ -1,0 +1,10 @@
+{
+  "_comment": "RoamingPartnerships (CLAUDE.md sección 5, docs/providers/roaming-agreements.md). operador nativo -> apps de roaming con acceso confirmado, con fuente pública citada en el .md correspondiente. Unidireccional: no asumir simetría.",
+  "partnerships": {
+    "ionity": ["plugsurfing"],
+    "fastned": ["plugsurfing"],
+    "zunder": ["waylet", "electromaps"],
+    "endesa-x": ["electromaps"],
+    "eranovum": ["zunder"]
+  }
+}

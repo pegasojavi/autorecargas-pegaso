@@ -1,0 +1,39 @@
+{
+  "providers": [
+    {
+      "providerId": "ionity",
+      "displayName": "IONITY",
+      "androidPackage": "com.cleevio.ionity.android.app",
+      "deepLinkScheme": null,
+      "playStoreId": "com.cleevio.ionity.android.app"
+    },
+    {
+      "providerId": "tesla",
+      "displayName": "Tesla",
+      "androidPackage": "com.teslamotors.tesla",
+      "deepLinkScheme": null,
+      "playStoreId": "com.teslamotors.tesla"
+    },
+    {
+      "providerId": "fastned",
+      "displayName": "Fastned",
+      "androidPackage": "nl.fastned.my",
+      "deepLinkScheme": null,
+      "playStoreId": "nl.fastned.my"
+    },
+    {
+      "providerId": "shell-recharge",
+      "displayName": "Shell",
+      "androidPackage": "com.shell.sitibv.retail",
+      "deepLinkScheme": null,
+      "playStoreId": "com.shell.sitibv.retail"
+    },
+    {
+      "providerId": "plugsurfing",
+      "displayName": "Plugsurfing",
+      "androidPackage": "com.xitaso.plugsurfing",
+      "deepLinkScheme": null,
+      "playStoreId": "com.xitaso.plugsurfing"
+    }
+  ]
+}
