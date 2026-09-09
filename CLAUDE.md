@@ -206,7 +206,8 @@ Aplica por igual a la app Android y a la app iOS.
 
 ### Fase 2 (post-MVP)
 - Favoritos guardados localmente en el dispositivo (sin cuenta).
-- Filtro por tipo de conector / potencia, si el dataset lo soporta.
+- ~~Filtro por tipo de conector / potencia~~ — adelantado al MVP el
+  2026-09-09 (ver sección 4.1), ya implementado.
 - Recordar qué apps de proveedor están instaladas para agilizar el selector
   multi-app en visitas repetidas al mismo cargador.
 - Caché offline del mapa.
@@ -356,8 +357,13 @@ protocol ChargerAppLauncher {
   navigation-compose. **DI:** Hilt.
 - **Red:** Retrofit/Ktor client de solo lectura contra la API de Open
   Charge Map, siempre filtrando `opendata=true`.
-- **Mapas (renderizado interactivo dentro de la app):** Google Maps SDK for
-  Android — pines, clustering, pan/zoom.
+- **Mapas (renderizado interactivo dentro de la app):** **osmdroid**
+  (OpenStreetMap) — decisión confirmada 2026-09-09, sustituye a Google Maps
+  SDK. Sin API key, sin depender de Google Play Services (mejor
+  compatibilidad con dispositivos sin GMS completo). Pines, pan/zoom.
+- **Ubicación:** `android.location.LocationManager` (framework, no
+  `FusedLocationProviderClient`) — misma razón que el mapa, cero
+  dependencia de Play Services en toda la app.
 - **QR:** ML Kit Barcode Scanning (o ZXing) + CameraX.
 - **Deep linking a apps de proveedor:** `PackageManager` + `Intent
   ACTION_VIEW` (esquema propio o App Link https), fallback a
@@ -812,11 +818,17 @@ de decisión, son trabajo pendiente de `builder-android`):**
 - Hilt: se usa composición manual (`AppContainer`) porque no se pudo fijar
   con confianza una versión de KSP compatible con AGP 9.0.1/Kotlin 2.3.20
   sin poder probarlo — migrar cuando se confirme la combinación correcta.
-- Mapa interactivo real (Google Maps Compose + pines): `feature:map` hoy
-  muestra una lista, no un mapa — hace falta una API key de Maps que no se
-  ha dado de alta todavía.
-- Geolocalización real: coordenada fija (Madrid) en vez de
-  `FusedLocationProviderClient` + permiso en runtime.
+- ✅ **Resuelto (2026-09-09): mapa interactivo real + GPS + filtros.**
+  Cambio de decisión respecto al stack (sección 4.1): en vez de Google Maps
+  SDK (necesitaba API key) se usa **osmdroid (OpenStreetMap)** — sin clave,
+  sin cuenta, y sin depender de Google Play Services, lo cual además da
+  mejor compatibilidad con dispositivos sin GMS completo (detectado en
+  pruebas reales: un móvil con tienda de apps propia del fabricante en vez
+  de Google Play). La ubicación usa `android.location.LocationManager` del
+  framework en vez de `FusedLocationProviderClient`, por la misma razón —
+  ninguna dependencia de Play Services en toda la app. Filtros de conector
+  (Tipo 2/CCS) y potencia (≥50 kW) implementados como chips sobre el mapa,
+  adelantando ese punto de la fase 2 a petición del usuario.
 - Selector de idioma real: los 24 `.properties` de `docs/i18n/` no se han
   convertido todavía a `values-<lang>/strings.xml` — los textos de la UI
   actual están embebidos en Kotlin (violación puntual de la sección 9,

@@ -40,9 +40,12 @@ dependencies {
   implementation(libs.androidx.compose.material.icons.extended)
   debugImplementation(libs.androidx.compose.ui.tooling)
 
+  implementation(libs.androidx.core.ktx)
+  implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.kotlinx.coroutines.core)
+  implementation(libs.osmdroid.android)
 
   testImplementation(libs.junit)
   testImplementation(libs.mockk)

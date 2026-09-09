@@ -21,9 +21,7 @@ mockk = "1.14.5"
 datastore = "1.1.7"
 cameraX = "1.5.1"
 mlkitBarcodeScanning = "17.3.0"
-mapsCompose = "6.7.0"
-playServicesMaps = "19.2.0"
-playServicesLocation = "21.3.0"
+osmdroid = "6.1.20"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -62,9 +60,7 @@ androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.r
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraX" }
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "cameraX" }
 mlkit-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkitBarcodeScanning" }
-maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
-play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
-play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
+osmdroid-android = { module = "org.osmdroid:osmdroid-android", version.ref = "osmdroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
