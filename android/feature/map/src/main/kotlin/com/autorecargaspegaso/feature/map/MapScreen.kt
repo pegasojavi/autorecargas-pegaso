@@ -88,6 +88,7 @@ fun MapScreen(
     ) { granted -> hasLocationPermission = granted }
 
     var mapCenter by remember { mutableStateOf(MADRID_LATITUDE to MADRID_LONGITUDE) }
+    var myLocation by remember { mutableStateOf<Pair<Double, Double>?>(null) }
 
     LaunchedEffect(Unit) {
         if (!hasLocationPermission) locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -96,6 +97,7 @@ fun MapScreen(
         if (hasLocationPermission) {
             requestCurrentLocation(context) { latitude, longitude ->
                 mapCenter = latitude to longitude
+                myLocation = latitude to longitude
                 viewModel.loadNearby(latitude, longitude)
             }
         }
@@ -119,6 +121,7 @@ fun MapScreen(
                     OsmMapView(
                         chargers = current.visibleChargers,
                         center = mapCenter,
+                        myLocation = myLocation,
                         onChargerClick = viewModel::selectCharger,
                         // .weight(1f), no fillMaxSize(): dentro de una Column sin peso,
                         // la vista nativa del mapa reclamaba toda la altura disponible
@@ -191,19 +194,24 @@ private fun ErrorContent(message: String, padding: PaddingValues) {
     }
 }
 
+private const val DEFAULT_ZOOM = 13.0
+private const val MY_LOCATION_ZOOM = 17.0
+
 @Composable
 private fun OsmMapView(
     chargers: List<Charger>,
     center: Pair<Double, Double>,
+    myLocation: Pair<Double, Double>?,
     onChargerClick: (Charger) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val myLocationIcon = remember { createDotDrawable(context, fillColor = 0xFF2E7DFF.toInt()) }
     val mapView = remember {
         MapView(context).apply {
             setTileSource(TileSourceFactory.MAPNIK)
             setMultiTouchControls(true)
-            controller.setZoom(13.0)
+            controller.setZoom(DEFAULT_ZOOM)
         }
     }
 
@@ -223,8 +231,14 @@ private fun OsmMapView(
         }
     }
 
-    LaunchedEffect(center) {
-        mapView.controller.setCenter(GeoPoint(center.first, center.second))
+    // Zoom de acercamiento (CLAUDE.md sección 2) solo cuando el centro es
+    // una ubicación real del GPS, no el respaldo fijo de Madrid.
+    LaunchedEffect(center, myLocation != null) {
+        mapView.controller.animateTo(
+            GeoPoint(center.first, center.second),
+            if (myLocation != null) MY_LOCATION_ZOOM else DEFAULT_ZOOM,
+            null,
+        )
     }
 
     AndroidView(
@@ -232,6 +246,17 @@ private fun OsmMapView(
         modifier = modifier,
         update = { view ->
             view.overlays.clear()
+
+            myLocation?.let { (latitude, longitude) ->
+                val meMarker = Marker(view).apply {
+                    position = GeoPoint(latitude, longitude)
+                    title = "Yo"
+                    icon = myLocationIcon
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                }
+                view.overlays.add(meMarker)
+            }
+
             chargers.forEach { charger ->
                 val marker = Marker(view).apply {
                     position = GeoPoint(charger.latitude, charger.longitude)
@@ -244,6 +269,29 @@ private fun OsmMapView(
             view.invalidate()
         },
     )
+}
+
+/** Pin circular relleno de [fillColor] con borde blanco, para distinguir "Yo" de los cargadores (pin rojo por defecto de osmdroid) sin necesitar un recurso drawable aparte. */
+private fun createDotDrawable(context: Context, fillColor: Int): android.graphics.drawable.Drawable {
+    val sizePx = (28 * context.resources.displayMetrics.density).toInt()
+    val bitmap = android.graphics.Bitmap.createBitmap(sizePx, sizePx, android.graphics.Bitmap.Config.ARGB_8888)
+    val canvas = android.graphics.Canvas(bitmap)
+    val radius = sizePx / 2f
+
+    val fillPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        color = fillColor
+        style = android.graphics.Paint.Style.FILL
+    }
+    val strokePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        color = android.graphics.Color.WHITE
+        style = android.graphics.Paint.Style.STROKE
+        strokeWidth = 3f * context.resources.displayMetrics.density
+    }
+
+    canvas.drawCircle(radius, radius, radius - strokePaint.strokeWidth / 2f, fillPaint)
+    canvas.drawCircle(radius, radius, radius - strokePaint.strokeWidth / 2f, strokePaint)
+
+    return android.graphics.drawable.BitmapDrawable(context.resources, bitmap)
 }
 
 private const val MADRID_LATITUDE = 40.4168
