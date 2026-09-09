@@ -19,9 +19,12 @@ interface OpenChargeMapApi {
         @Query("opendata") openDataOnly: Boolean = true,
         @Query("compact") compact: Boolean = true,
         @Query("verbose") verbose: Boolean = false,
-        // TODO: añadir @Query("key") con una API key propia de OCM antes de
-        // producción — funciona sin ella para volúmenes bajos, pero con
-        // límite de tasa más estricto (CLAUDE.md sección 0/5).
+        // Obligatoria (confirmado en vivo, 2026-09-09): OCM devuelve 403
+        // sin ella en /v3/poi, ya no es "opcional para volumen bajo" como
+        // se documentó al elegir el dataset (CLAUDE.md sección 0/5). Sin
+        // una clave real configurada en OpenChargeMapClientFactory, toda
+        // llamada falla con 403 — no es un bug de este cliente.
+        @Query("key") apiKey: String,
     ): List<OcmPoiDto>
 
     companion object {

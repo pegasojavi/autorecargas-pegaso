@@ -21,8 +21,19 @@ class AppContainer(context: Context) {
     private val openChargeMapApi = OpenChargeMapClientFactory.create(debugLogging = BuildConfigFlags.DEBUG)
 
     val providerDirectory = JsonProviderDirectory(context)
-    val chargerRepository: ChargerRepository = OcmChargerRepository(openChargeMapApi, chargerMapper)
+    val chargerRepository: ChargerRepository = OcmChargerRepository(openChargeMapApi, chargerMapper, apiKey = OCM_API_KEY)
     val chargerAppLauncher = AndroidChargerAppLauncher(context.applicationContext, providerDirectory)
+
+    private companion object {
+        /**
+         * ⚠️ Placeholder — sin clave real, toda llamada a Open Charge Map
+         * devuelve 403 (CLAUDE.md sección 0/5). Registrar una gratuita en
+         * https://openchargemap.org y moverla a un fichero no versionado
+         * (`local.properties` → `BuildConfig`), nunca hardcodeada aquí en
+         * el commit final.
+         */
+        const val OCM_API_KEY = ""
+    }
 }
 
 /** `buildConfig = false` en el módulo :app (plantilla generada) — sin BuildConfig.DEBUG disponible; se fija a false hasta activarlo si hace falta. */

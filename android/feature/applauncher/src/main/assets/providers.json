@@ -34,6 +34,62 @@
       "androidPackage": "com.xitaso.plugsurfing",
       "deepLinkScheme": null,
       "playStoreId": "com.xitaso.plugsurfing"
+    },
+    {
+      "providerId": "allego",
+      "displayName": "Allego",
+      "androidPackage": "eu.allego.app",
+      "deepLinkScheme": null,
+      "playStoreId": "eu.allego.app"
+    },
+    {
+      "providerId": "enbw",
+      "displayName": "EnBW mobility+",
+      "androidPackage": "com.enbw.ev",
+      "deepLinkScheme": null,
+      "playStoreId": "com.enbw.ev"
+    },
+    {
+      "providerId": "iberdrola",
+      "displayName": "Movilidad Iberdrola",
+      "androidPackage": "es.iberdrola.recargaverde",
+      "deepLinkScheme": null,
+      "playStoreId": "es.iberdrola.recargaverde"
+    },
+    {
+      "providerId": "endesa-x",
+      "displayName": "Endesa On Your Way",
+      "androidPackage": "com.enel.mobile.recharge2",
+      "deepLinkScheme": null,
+      "playStoreId": "com.enel.mobile.recharge2"
+    },
+    {
+      "providerId": "wenea",
+      "displayName": "Wenea",
+      "androidPackage": "es.wenea.app.client",
+      "deepLinkScheme": null,
+      "playStoreId": "es.wenea.app.client"
+    },
+    {
+      "providerId": "zunder",
+      "displayName": "Zunder",
+      "androidPackage": "es.easycharger.app",
+      "deepLinkScheme": null,
+      "playStoreId": "es.easycharger.app"
+    },
+    {
+      "providerId": "chargemap",
+      "displayName": "Chargemap",
+      "androidPackage": "com.chargemap_beta.android",
+      "deepLinkScheme": null,
+      "playStoreId": "com.chargemap_beta.android"
+    },
+    {
+      "providerId": "total-energies",
+      "displayName": "TotalEnergies Charge Europe",
+      "androidPackage": "com.total.europe",
+      "deepLinkScheme": null,
+      "playStoreId": "com.total.europe"
     }
   ]
 }

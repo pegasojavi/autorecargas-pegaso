@@ -14,10 +14,33 @@ package com.autorecargaspegaso.network.ocm
  */
 object OcmOperatorMapping {
     private val titleToProviderId: Map<String, String> = mapOf(
+        // Verificados por uso/documentación directa de la app (confianza alta).
         "IONITY" to "ionity",
         "Tesla" to "tesla",
         "Tesla Supercharger" to "tesla",
         "Fastned" to "fastned",
+        "Shell Recharge" to "shell-recharge",
+
+        // ⚠️ NO VERIFICADOS contra la API real de OCM (2026-09-09): la API
+        // empezó a exigir API key (`x-api-key`/`key`) para cualquier
+        // consulta, incluida `referencedata`, y no se ha podido consultar
+        // la lista real de operadores para confirmar el `Title` exacto que
+        // usa OCM para cada uno. Son el nombre comercial más probable —
+        // `researcher-android` debe confirmarlos (y corregirlos si hace
+        // falta) en cuanto se dé de alta una clave (CLAUDE.md sección 0/5).
+        "Allego" to "allego",
+        "EnBW" to "enbw",
+        "Iberdrola" to "iberdrola",
+        "Endesa" to "endesa-x",
+        "Wenea" to "wenea",
+        "Zunder" to "zunder",
+        "TotalEnergies" to "total-energies",
+
+        // Chargemap y Plugsurfing NO se añaden aquí a propósito: son
+        // agregadores de roaming, no operadores nativos de cargadores
+        // propios (CLAUDE.md sección 0, docs/providers/chargemap.md y
+        // plugsurfing.md) — no deben aparecer como nativeProviderId de
+        // ningún Charger de OCM.
     )
 
     /**

@@ -779,6 +779,16 @@ con la regla de resolución sin selector cubierta por tests unitarios reales,
 `ProviderDirectory`/`RoamingPartnerships` poblados desde `docs/providers/`.
 Repo en `https://github.com/pegasojavi/autorecargas-pegaso`.
 
+**⚠️ Hallazgo nuevo (2026-09-09), corrige una asunción de la sección 0/5:**
+Open Charge Map **ahora exige API key obligatoria** (`key`/`x-api-key`) en
+todas sus consultas, incluida `/v3/poi` — verificado en vivo, no es ya
+"funciona sin clave para volumen bajo" como se documentó al elegir el
+dataset. Registro gratuito en https://openchargemap.org. El código ya está
+preparado para pasarla (`OpenChargeMapApi`/`ChargerRepository`/
+`AppContainer`), pero con la clave vacía por defecto **la app no podrá
+traer ningún cargador real hasta que se dé de alta una** — no es un bug,
+es un bloqueo real de datos pendiente de esa clave.
+
 **Fast-follows explícitamente diferidos en este scaffold (no son pendientes
 de decisión, son trabajo pendiente de `builder-android`):**
 - Hilt: se usa composición manual (`AppContainer`) porque no se pudo fijar
