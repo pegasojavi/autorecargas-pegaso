@@ -137,9 +137,11 @@ alfabético sin criterio.
 
 ## Verificados — Noruega/Báltico/Finlandia, lote final (2026-09-10)
 
-**Aviso: esta ronda se cortó por límite de sesión de búsquedas web (200/200
-usadas), no por falta de candidatos** — ver nota al usuario. Últimos
-hallazgos antes del corte:
+**Nota:** esta ronda se cortó inicialmente por límite de sesión de búsquedas
+web (200/200), **ya resuelto** — límite subido a 1000 vía
+`~/.claude/settings.json` (`CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION`),
+aplicado en caliente sin reiniciar sesión. Continúa el resto de rondas más
+abajo. Últimos hallazgos de antes del corte:
 
 | Título en lista | App real | Package Android | Confianza / notas |
 |---|---|---|---|
@@ -149,6 +151,69 @@ hallazgos antes del corte:
 | Ignitis On | Ignitis ON | `com.fortum.chargeiton` | Alta — específica de carga EV; no confundir con "Ignitis Savitarna" (`lt.ignitis.app`, facturación) ni "Ignitis EnergySmart" (`lt.ignitis.smartapp`, gestión energética doméstica). Cubre Lituania, Letonia y Estonia. |
 | Sperto (DK) | — | — | **Sin confirmar** — app mencionada pero sin package localizado. |
 | OK (DK) | — | — | **Sin confirmar** — app mencionada pero sin package localizado. |
+
+## Verificados — España, COMPLETA (2026-09-10)
+
+Petición explícita del usuario: terminar España al 100% antes de seguir con
+el resto. Con esta ronda quedan cubiertos los ~19 candidatos españoles de
+la lista de 380 (sumado a Plenergy/Moeve/Naturgy/Electro-EMT de rondas
+anteriores).
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| AENA EV (ES) | AenaEV | `com.etecnic.aena` | Alta — red de puntos de recarga en aeropuertos de Aena, mismo proveedor blanco "etecnic" que Naturgy Recarga/eTecnic EVcharge. |
+| Ballenoil (ES) | Ballenoil Easy Fuel | `ballenoil.com.ballenoil` | Media — la app encontrada es la general de la gasolinera (combustible + promociones); Ballenoil lanzó red propia de recarga ultrarrápida en 2025, confirmar si la carga se gestiona dentro de esta misma app o si sacan una específica. |
+| BarterGo (ES) | BarterGO | `com.goveyond.cp.app` | Alta — resultado único y limpio. |
+| Carrefour (ES) | "Carrefour eCharge" (mencionada, sin package confirmado) | Sin confirmar | **Sin confirmar** — indicios de que los puntos Carrefour son en realidad "Carrefour Energies by Allego" (marca conjunta con Allego, ya mapeado como `allego`); podría no necesitar entrada propia — confirmar antes de mapear como operador independiente. |
+| CEL TODA Navarra (ES) | — | — | **Sin app propia** — comunidad energética local con 25 puntos de 50kW, sin app dedicada encontrada; probablemente acceso por tarjeta/RFID. |
+| ECPoints (ES) | — | — | **No localizada** — no aparece ninguna app con ese nombre exacto en los resultados. |
+| Electrico.es | Electrico.es | `es.electrico.electrico` | Alta — resultado único y limpio. |
+| Fenie Energía (Spain) | Feníe Energía Recarga | `es.fenieenergia.recarga` | Alta — hallazgo colateral en otra búsqueda, resultado limpio. |
+| Interparking (ES) | Pcard app (la más orientada a carga EV) | `com.interparkingmobileapp` | Media — Interparking tiene 3 apps (P-app `ipkhApp.Droid` para parking general, Interparking `com.interparking` con localización de carga también, y Pcard con activación de carga con un clic); confirmar cuál es la vigente para carga antes de mapear. |
+| MELIB (ES) | MELIB (versión 2025, red pública de Baleares) | `com.etecnic.melib` (nueva) / `org.fundaciobit.melib.app` (antigua) | Media-alta — migración de app reciente (abril 2025); usar la nueva `com.etecnic.melib` salvo que se confirme que la antigua sigue activa. |
+| Nissan (ES) Dealer Network | — | — | **Sin app propia esperable** — es una red de concesionarios, no un operador de carga con app de consumidor; descartar como candidato real. |
+| PowerDot / PowerDot (Es) | — (sin app propia, confirmado) | — | **Confirmado sin app propia** — Powerdot no tiene aplicación propia; se accede vía apps de terceros (Electromaps, Chargemap, Octopus Electroverse). No mapear como entrada independiente — ya cubierto por los agregadores de roaming existentes. |
+| sofos (ES) | — | — | **No localizada** — no aparece ninguna app con ese nombre en los resultados. |
+| UEnergia (ES) | UEnergia | `es.uenergia.android` | Alta — desarrollada por IBIL (grupo Repsol), resultado único y limpio. |
+| Vilalta Greenergy (ES) | Vilalta Greenergy | `com.etecnic.vilalta` | Alta — mismo proveedor blanco "etecnic" que AENA EV/Naturgy Recarga/eTecnic EVcharge/MELIB nueva — patrón claro de plataforma compartida por varios operadores españoles pequeños. |
+
+**Patrón detectado, útil para rondas futuras:** el proveedor de plataforma
+blanca "etecnic" (mismo grupo que ya está mapeado como `etecnic`/EVcharge)
+aparece detrás de varias apps española distintas (AENA EV, MELIB nueva,
+Naturgy Recarga, Vilalta Greenergy) — cada una con su propio nombre
+comercial y package, así que siguen siendo operadores distintos a efectos
+de mapeo (cada uno tiene su propio `nativeProviderId` real en OCM), pero
+conviene saberlo para no sorprenderse si aparecen más operadores españoles
+pequeños con el mismo patrón de package `com.etecnic.<nombre>`. Mismo
+patrón, otro proveedor blanco: "placetoplug" (ya visto en Eranovum,
+`com.placetoplug.eranovum`) también está detrás de Umbrella eMobility (ver
+fila siguiente) — dos plataformas blancas españolas distintas ("etecnic" y
+"placetoplug") sirviendo a varios operadores pequeños cada una.
+
+### Añadido fuera de la lista original de 380: Umbrella eMobility (ES)
+
+Reportado directamente por el usuario en un cargador real ("no lo veo en la
+lista") — **no estaba en los 380 candidatos generados el 2026-09-10**
+(quizás dado de alta en OCM después de esa fecha, o se coló por algún
+filtro). Verificado en vivo ahora mismo:
+
+| Título real en OCM | App real | Package Android | Confianza |
+|---|---|---|---|
+| Umbrella eMobility (ES) | Umbrella emobility | `com.placetoplug.elecchargepoints` | Alta — título exacto confirmado contra `GET /v3/referencedata` (ID 3786), app y package confirmados en Google Play (desarrollador ELEC Charge Points, mismo grupo "placetoplug" que Eranovum). |
+
+## Verificados — Estonia/Eslovaquia/Eslovenia/Croacia (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| Elektrum Drive | Elektrum Drive | `lv.elektrum.drive` | Alta — resultado único y limpio (Letonia, Latvenergo). |
+| Enefit (LT) | Enefit Volt | `ee.energia.driivz.mobile.volt` | Media-alta — Enefit tiene varias apps en migración: "Enefit Volt Home" (`ee.energia.homecharging`, carga doméstica) está siendo reemplazada por "Enefit Charge" (nueva, package no confirmado); confirmar cuál es la vigente para carga pública antes de mapear. |
+| ELMO | — | — | **No localizada** — los resultados solo devuelven apps homónimas no relacionadas (RRHH, Sesame Street); pendiente de búsqueda más específica. |
+| Level2.ee | — | — | **Sin confirmar** — servicio real de comprobación de disponibilidad de cargadores en Estonia, pero sin package de app propia confirmado. |
+| ZSE Drive | ZSE Drive | `sk.zse.drive` | Alta — resultado único y limpio, incluye roaming nacional e internacional. |
+| Slovenské elektrárne | — | — | **No localizada** — sin app propia confirmada distinta de ZSE Drive/otras redes eslovacas. |
+| ETOP (SK) | — | — | **No localizada** — no aparece en los resultados; posiblemente descontinuada o muy minoritaria. |
+| Gremo na elektriko (SI) | Gremo na elektriko | `si.elektroljubljana.gremonaelektriko` | Alta — desarrollada por Elektro Ljubljana, disponible desde 2017. |
+| Elen | elen | `hr.hep.elen` | Alta — red de HEP (eléctrica nacional croata), +46.000 instalaciones en Google Play. |
 
 ## Verificados — Portugal, lote 1 (2026-09-10)
 
