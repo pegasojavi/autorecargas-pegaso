@@ -16,7 +16,7 @@
     <string name="map_filter_connector_wireless">Wireless</string>
     <string name="map_filter_connector_unknown">Other</string>
     <string name="map_filter_min_power">≥ 50 kW</string>
-    <string name="map_qr_scan_action">Scan charger</string>
+    <string name="map_qr_scan_action">Scan QR</string>
     <string name="map_error_loading">Couldn\'t load chargers: %1$s</string>
     <string name="map_dismiss_action">Dismiss</string>
     <string name="map_my_location_label">Me</string>

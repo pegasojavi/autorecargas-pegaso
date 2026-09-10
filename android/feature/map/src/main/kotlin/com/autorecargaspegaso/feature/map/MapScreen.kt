@@ -36,8 +36,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -170,9 +170,18 @@ fun MapScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onOpenQrScanner) {
-                Icon(Icons.Filled.QrCodeScanner, contentDescription = stringResource(R.string.map_qr_scan_action))
-            }
+            // Extended (icono + texto visible), a petición del usuario. OJO:
+            // el overload `ExtendedFloatingActionButton(icon=, text=, ...)`
+            // de material3 1.4.0 aplica `clearAndSetSemantics` sobre `text`
+            // (verificado con javap sobre el .aar real) — el texto visible
+            // queda excluido del árbol de accesibilidad a propósito, así que
+            // el nombre accesible del botón depende ÚNICAMENTE del
+            // `contentDescription` del icono. No dejarlo en null.
+            ExtendedFloatingActionButton(
+                onClick = onOpenQrScanner,
+                icon = { Icon(Icons.Filled.QrCodeScanner, contentDescription = stringResource(R.string.map_qr_scan_action)) },
+                text = { Text(stringResource(R.string.map_qr_scan_action)) },
+            )
         },
     ) { padding ->
         when (val current = state) {

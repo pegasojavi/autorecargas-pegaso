@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -43,6 +45,7 @@ import com.google.mlkit.vision.common.InputImage
  * No graba ni almacena imágenes; el análisis de fotogramas es en vivo y se
  * descarta al momento (CLAUDE.md sección 10).
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QrScannerScreen(
     onQrDetected: (String) -> Unit,
@@ -58,7 +61,14 @@ fun QrScannerScreen(
         androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
     ) { granted -> hasCameraPermission = granted }
 
-    Scaffold(modifier = modifier) { padding ->
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            // A petición del usuario: título visible arriba de la ventana de
+            // escaneo, para dejar claro qué se está apuntando con la cámara.
+            CenterAlignedTopAppBar(title = { Text(stringResource(R.string.qrscanner_title)) })
+        },
+    ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
             if (hasCameraPermission) {
                 CameraPreviewWithAnalysis(onQrDetected = onQrDetected)
