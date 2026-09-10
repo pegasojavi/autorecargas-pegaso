@@ -281,6 +281,40 @@ filtro). Verificado en vivo ahora mismo:
 | Salzburg AG | Stromladen | `com.beenergised.chargemobile.salzburgag` | Alta — resultado único y limpio. |
 | Kelag AG | Kelag-Mobility-App | `at.kelag.autostrom` | Alta — acceso a la red de roaming BEÖ (Bundesverband Elektromobilität Österreich) además de puntos propios de Kelag. |
 
+## Verificados — Italia, lote 3 — completa (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| Acea (IT) | Acea e-mobility | `it.acea.emobility` | Alta — red de Roma, +15.000 puntos, resultado único y limpio. |
+| Cogeser Energia (Italia) | Cogeser Energia \| e-move | `com.cogeser.energia.emove` | Alta — no confundir con "MyCogeser" (`com.blumobile.cogeser`), que es facturación de gas/luz doméstica. |
+| GardaUno | Garda Uno Green Mobility | `com.gardauno.greenmobility` | Alta — resultado único y limpio, zona del lago de Garda. |
+| iPlanet (IT) | IPlanet | Sin confirmar en Android (solo iOS localizado) | App confirmada y activa (carga ultrarrápida), pero esta búsqueda solo devolvió su ficha de App Store; confirmar directamente el package de Android antes de mapear. |
+| BLUETORINO | Bluetorino | `com.polyconseil.bluetorino` | **Servicio descontinuado (12 feb 2021)**, sustituido por LeasysGO! — no mapear como operador activo pese a que el package se haya localizado. |
+
+**Italia queda cubierta al completo** (22 candidatos de la lista original).
+
+## Verificados — Alemania, lote 2 no-municipal (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| Comfortcharge | — (cubierta por Electromaps y agregadores GoingElectric/Hubject/Ladenetz) | — | **Sin app propia** — filial de Deutsche Telekom, sin app dedicada encontrada; se accede vía apps que integran sus datos (Electromaps, etc.). |
+| BS Energie | LÖWENLADEN (marca de BS\|ENERGY, Braunschweig — no confundir con Stadtwerke Bad Salzuflen, mismo prefijo "BS" pero ciudad distinta) | `de.chargecloud.b2c.komdia` | Media — confirmar que el título real de OCM se refiere a Braunschweig (BS\|ENERGY) y no a otra "BS" antes de mapear; la app usa la plataforma blanca alemana "chargecloud" (mismo patrón que "etecnic" en España). |
+
+**Patrón adicional detectado:** "chargecloud GmbH" (Colonia) es otra plataforma blanca alemana — como "etecnic"/"placetoplug" en España — detrás de varias apps de eléctricas locales distintas (LÖWENLADEN/BS Energie, TankE-Netzwerk, ChargeME, y candidata a cubrir más Stadtwerke alemanes de la lista aún sin verificar). Útil tenerlo en cuenta al seguir con el resto de municipales alemanas.
+
+## Verificados — Italia, lote 2 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| AGSM Electrify Verona | AGSM AIM e-mobility (evolución de "Verona SmartApp") | Sin confirmar | App confirmada por nombre, package no localizado; ojo con la migración de nombre (Verona SmartApp → AGSM AIM e-mobility) y quejas de usuarios sobre la app en prensa local. |
+| AIMove (IT) | AIMove | `it.aimove` | Alta — resultado único y limpio, incluye reserva gratuita de hasta 15 min. |
+| Ekomobil (Italy) | — (usa Electromaps) | — | **Sin app propia** — Ekomobil integró la app de Electromaps directamente en el mercado italiano en vez de tener la suya. |
+| Enerhub | EnerApp | `it.enerhub.enerapp` | Alta — resultado único y limpio. |
+| Flyelectric (IT) | flyElectric | `it.flyelectric.app` | Alta — resultado único y limpio. |
+| Silfi (Italy) | FeelFlorence | `it.silfi.feelflorence` | Media — **riesgo de obsolescencia**: desde enero 2025 el Ayuntamiento de Florencia está sustituyendo todas las columnas de Silfi por otras nuevas gestionadas por Be Charge/Plenitude (ya mapeado como `com.bepower.BeCharge`) — confirmar antes de mapear si el operador nativo en OCM sigue siendo "Silfi" o ya aparece como Plenitude para los puntos reales. |
+| Green Land Mobility (Italy) | — | — | **No localizada / posiblemente obsoleta** — proyecto histórico de 2011, sin app moderna encontrada en Google Play. |
+| Emobitaly (Italy) | EMOBITALY | `eu.optimile.emobitaly.MobilityApp` | Alta — resultado único y limpio, +400 estaciones. |
+
 ## Verificados — Italia, lote 1 (2026-09-10)
 
 | Título en lista | App real | Package Android | Confianza / notas |
@@ -325,6 +359,40 @@ filtro). Verificado en vivo ahora mismo:
 | Jet Charge (UK) | — | — | **No encontrada app UK real** — los resultados solo devuelven apps homónimas de Australia (`au.com.jetcharge.connect`) y Kazajistán (`kz.jetcharge.prod`), sin relación con la entrada UK de la lista; no mapear sin verificación directa. |
 | Joju Ltd | Joju Charging | `com.jojucharging` | Alta — parte de la red EVOpencard. |
 | ElectRoad (UK) | ElectRoad | `uk.electroad.driverapp` | Alta — resultado único y limpio. |
+
+## Verificados — Francia, lote 2 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| SDET (FR) | Alizé charge (mencionada, red "Le Plein Tarnais") | Sin confirmar | App mencionada por nombre pero sin package localizado en Google Play; confirmar directamente en la ficha de Play Store antes de mapear. |
+| SDEY (Fr) | — (usa Electromaps) | — | **Sin app propia** — recomienda explícitamente la app Electromaps (ya mapeada) para escanear el QR; plan "Plug and charge" automático en los ultra-rápidos, sin necesidad de app en esos casos. |
+| USEDA (FR) | — (usa Chargemap/Electromaps) | — | **Sin app propia** — mismo patrón que SDEY, cubierto por agregadores ya mapeados. |
+| R3 | — (usa Monta, app de terceros) | Sin confirmar | **Sin app propia** — toda la operativa se hace vía la app "Monta" (agregador multi-red), package no confirmado en esta búsqueda. |
+| eborn | eborn / Reseau Eborn | `fr.reseau_eborn` (principal) / `com.electromaps.brand.eborn` (variante de marca blanca Electromaps) | Alta — red de Bretaña, +100.000 puntos vía roaming. Confirmar cuál de las dos apps es la vigente antes de mapear. |
+| Sydego | — (rebrandeada a "Ouest Charge", ya mapeado como `com.plugsurfing.ouestcharge`) | — | **No es una entrada nueva** — Sydego es el nombre antiguo de Ouest Charge (Loira Atlántico), ya cubierto en la ronda de Francia lote 1. |
+| ZEN (Zero Emission Network)/PROVIRIDIS | Z-E-N | `com.proviridis.zen` | Alta — resultado único y limpio, red de supercargadores ultrarrápidos. |
+| Petite Borne (FR) | — | — | **No localizada** — no aparece ninguna app con ese nombre exacto en los resultados. |
+
+## Verificados — Francia, lote 3 — completa (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| SDE76 (FR) | — (usa Chargemap) | — | **Sin app propia** — se accede vía badge "MOBI+" o Chargemap (ya mapeado). |
+| AlterBase - Sorégies (FR) | Sorégies Mobilités (mencionada) | Sin confirmar | App confirmada por nombre, package no localizado en Google Play en esta búsqueda. |
+| Dream Energy | Dream Energy | `fr.dreamenergy.mobility` | Alta — resultado único y limpio, red de supercargadores 300kW. |
+| E-Charge50 (FR) | E-charge50 réseau de recharge | `es.echarge50.app` | Alta — resultado único (el prefijo "es." del package es solo convención interna del desarrollador, la red es francesa, departamento de la Manche). |
+| e-Vadea | e-Vadea | `com.spie.evadea` | Alta — resultado único y limpio. |
+| Enerstock | Enerstock | `de.chargecloud.b2c.enerstock` o `com.enerstock` | Media — dos packages distintos en resultados, confirmar cuál es la ficha vigente antes de mapear. |
+| CNR (Compagnie Nationale du Rhône) | — (operada por Freshmile, app "Freshmile Charge") | Sin confirmar | **Sin app propia** — corredor eléctrico del Ródano operado por Freshmile desde 2016; package de Freshmile Charge no confirmado en esta búsqueda, candidato a añadir como agregador de roaming si se verifica. |
+| EcoCharge77 | Ecocharge77 | `com.plugsurfing.ecocharge77` | Alta — resultado único y limpio, red de Sena y Marne (SDESM). |
+
+**Francia queda cubierta al completo** (28 candidatos de la lista original,
+sumado a Sigeif/Métropolis/etc. de rondas anteriores) — patrón dominante:
+la mayoría de sindicatos departamentales franceses (SDET, SDEY, USEDA,
+SDE76, Sigeif) **no tienen app propia**, se apoyan en Chargemap/Electromaps
+ya mapeados; solo las redes privadas/comerciales (Dream Energy, e-Vadea,
+Enerstock, ZEN, EcoCharge77, eborn, KiWhi Pass, e-totem, Métropolis, Pass
+Pass VE, Ouest Charge) tienen app propia real.
 
 ## Verificados — Francia, lote 1 (2026-09-10)
 
