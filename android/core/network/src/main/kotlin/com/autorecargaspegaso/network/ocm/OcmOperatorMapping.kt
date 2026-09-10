@@ -27,6 +27,10 @@ object OcmOperatorMapping {
         "Enel X" to "endesa-x", // nombre previo al rebranding, algunos puntos antiguos pueden seguir así
         "Wenea" to "wenea",
         "Zunder" to "zunder",
+        "Mercadona" to "iberdrola",
+        "Repsol - Ibil (ES)" to "waylet",
+        "EDP" to "edp",
+        "Eranovum (ES)" to "eranovum",
 
         // Shell Recharge: no existe una entrada genérica "Shell Recharge"
         // en OCM — solo variantes por país/marca. Solo se listan las

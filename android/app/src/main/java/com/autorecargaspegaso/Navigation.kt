@@ -3,8 +3,16 @@ package com.autorecargaspegaso
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -12,6 +20,8 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.autorecargaspegaso.domain.LaunchResult
+import com.autorecargaspegaso.domain.ProviderAppInfo
 import com.autorecargaspegaso.feature.map.MapScreen
 import com.autorecargaspegaso.feature.map.MapViewModel
 import com.autorecargaspegaso.feature.qrscanner.QrScannerScreen
@@ -32,6 +42,7 @@ fun MainNavigation() {
         entryProvider = entryProvider {
             entry<MapRoute> {
                 val mapContext = LocalContext.current
+                var pendingDisambiguation by remember { mutableStateOf<List<ProviderAppInfo>?>(null) }
                 val viewModel: MapViewModel = viewModel(
                     factory = viewModelFactory {
                         initializer {
@@ -39,11 +50,12 @@ fun MainNavigation() {
                                 repository = appContainer.chargerRepository,
                                 geocodingRepository = appContainer.geocodingRepository,
                                 openProviderApp = { charger ->
-                                    val result = appContainer.chargerAppLauncher.resolve(charger)
-                                    if (result is com.autorecargaspegaso.domain.LaunchResult.NoProviderInfo) {
-                                        Toast.makeText(mapContext, mapContext.getString(R.string.provider_app_unknown), Toast.LENGTH_SHORT).show()
-                                    } else {
-                                        appContainer.chargerAppLauncher.launch(result)
+                                    when (val result = appContainer.chargerAppLauncher.resolve(charger)) {
+                                        LaunchResult.NoProviderInfo ->
+                                            Toast.makeText(mapContext, mapContext.getString(R.string.provider_app_unknown), Toast.LENGTH_SHORT).show()
+                                        is LaunchResult.NeedsDisambiguation ->
+                                            pendingDisambiguation = result.candidates
+                                        else -> appContainer.chargerAppLauncher.launch(result)
                                     }
                                 },
                                 getDirections = { charger -> appContainer.chargerAppLauncher.launchDirections(charger) },
@@ -56,6 +68,16 @@ fun MainNavigation() {
                     onOpenQrScanner = { backStack.add(QrScannerRoute) },
                     onOpenSettings = { backStack.add(SettingsRoute) },
                 )
+                pendingDisambiguation?.let { candidates ->
+                    ProviderDisambiguationDialog(
+                        candidates = candidates,
+                        onSelect = { chosen ->
+                            pendingDisambiguation = null
+                            appContainer.chargerAppLauncher.launch(LaunchResult.OpenedApp(chosen))
+                        },
+                        onDismiss = { pendingDisambiguation = null },
+                    )
+                }
             }
             entry<QrScannerRoute> {
                 val context = LocalContext.current
@@ -65,6 +87,40 @@ fun MainNavigation() {
             }
             entry<SettingsRoute> {
                 SettingsScreen(onBack = { backStack.removeLastOrNull() })
+            }
+        },
+    )
+}
+
+/**
+ * Selector multi-app (CLAUDE.md secciones 0/3/5, revisión 2026-09-10): solo
+ * se muestra cuando `ChargerAppLauncher.resolve()` devuelve
+ * `LaunchResult.NeedsDisambiguation` — es decir, cuando el usuario tiene dos
+ * o más apps candidatas instaladas a la vez para el mismo cargador.
+ * [candidates] son solo las instaladas (nunca todas las candidatas).
+ */
+@Composable
+private fun ProviderDisambiguationDialog(
+    candidates: List<ProviderAppInfo>,
+    onSelect: (ProviderAppInfo) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.provider_disambiguation_title)) },
+        text = {
+            androidx.compose.foundation.layout.Column {
+                candidates.forEach { candidate ->
+                    TextButton(onClick = { onSelect(candidate) }) {
+                        Text(candidate.displayName)
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.provider_disambiguation_cancel))
             }
         },
     )

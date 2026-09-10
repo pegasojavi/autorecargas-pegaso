@@ -27,13 +27,18 @@ Reglas:
   para abrir la app de navegación (Android resuelve el chooser si hay
   varias instaladas). No la implementes reutilizando `ChargerAppLauncher` ni
   `ProviderDirectory` — no tiene relación con el proveedor del cargador.
-- Regla de resolución multi-app (CLAUDE.md secciones 0/3/5, revisada — ya
-  NO se muestra selector): si `charger.roamingProviderIds` no está vacío,
-  `resolve()` decide sola: si hay exactamente una candidata instalada
-  (nativa o de roaming), se abre esa; si no, se usa la app del
-  `nativeProviderId` (instalada o su ficha en tienda). `roamingProviderIds`
-  sale de la tabla estática `RoamingPartnerships`
-  (`docs/providers/roaming-agreements.md`), no del dataset OCM.
+- Regla de resolución multi-app (CLAUDE.md secciones 0/3/5, revisión
+  2026-09-10): si `charger.roamingProviderIds` no está vacío, `resolve()`
+  decide así: si hay exactamente una candidata instalada (nativa o de
+  roaming), se abre esa sin preguntar; si no hay ninguna instalada, se usa
+  la app del `nativeProviderId` sin preguntar (instalada o su ficha en
+  tienda); **si hay dos o más candidatas instaladas a la vez, `resolve()`
+  devuelve `LaunchResult.NeedsDisambiguation(candidates)`** con las apps
+  instaladas, y quien llame a `resolve()` (la pantalla de mapa/ficha de
+  cargador) muestra un selector para que el usuario elija — es el único
+  caso en el que sí hay selector. `roamingProviderIds` sale de la tabla
+  estática `RoamingPartnerships` (`docs/providers/roaming-agreements.md`),
+  no del dataset OCM.
 - Idiomas (CLAUDE.md sección 6): un fichero `values-<lang>/strings.xml` por
   idioma (ES/FR/EN/DE en el MVP), nunca texto embebido en código. ⚠️ El
   selector de idioma **NO** debe leer `resources.assets.locales` — esa API

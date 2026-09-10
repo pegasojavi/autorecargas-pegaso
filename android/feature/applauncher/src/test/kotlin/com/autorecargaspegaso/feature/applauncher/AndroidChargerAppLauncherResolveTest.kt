@@ -14,9 +14,10 @@ import org.junit.Test
 
 /**
  * Verifica la regla de resolución multi-app confirmada en CLAUDE.md
- * secciones 0/3/5: una única app candidata instalada gana; en cualquier
- * otro caso (ninguna o varias instaladas) gana el operador nativo. Ya NO
- * existe un caso de selector/desambiguación manual.
+ * secciones 0/3/5 (revisión 2026-09-10): una única app candidata instalada
+ * gana; si ninguna está instalada, gana el operador nativo; si hay dos o
+ * más instaladas a la vez, se devuelve `NeedsDisambiguation` con esas apps
+ * instaladas en vez de decidir sola.
  */
 class AndroidChargerAppLauncherResolveTest {
 
@@ -82,10 +83,10 @@ class AndroidChargerAppLauncherResolveTest {
     }
 
     @Test
-    fun `multi-app con las dos instaladas gana el operador nativo, nunca un selector`() {
+    fun `multi-app con las dos instaladas a la vez devuelve NeedsDisambiguation con ambas`() {
         val launcher = launcherWithInstalled(nativeProvider.androidPackage, roamingProvider.androidPackage)
         val result = launcher.resolve(charger(native = "native", roaming = listOf("roaming")))
-        assertEquals(LaunchResult.OpenedApp(nativeProvider), result)
+        assertEquals(LaunchResult.NeedsDisambiguation(listOf(nativeProvider, roamingProvider)), result)
     }
 
     @Test

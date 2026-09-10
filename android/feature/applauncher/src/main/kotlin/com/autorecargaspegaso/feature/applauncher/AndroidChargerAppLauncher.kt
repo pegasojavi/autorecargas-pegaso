@@ -11,10 +11,12 @@ import com.autorecargaspegaso.domain.ProviderAppInfo
 import com.autorecargaspegaso.domain.ProviderDirectory
 
 /**
- * Implementación Android de [ChargerAppLauncher] (CLAUDE.md secciones 0/3):
- * resuelve sin preguntar al usuario — una única app candidata instalada
- * gana; en cualquier otro caso (ninguna o varias instaladas) gana la app
- * del operador nativo del cargador.
+ * Implementación Android de [ChargerAppLauncher] (CLAUDE.md secciones 0/3,
+ * revisión 2026-09-10 de la regla de resolución multi-app): resuelve sin
+ * preguntar al usuario cuando hay una única app candidata instalada (esa
+ * gana) o ninguna instalada (gana la del operador nativo); si hay dos o más
+ * candidatas instaladas a la vez, devuelve [LaunchResult.NeedsDisambiguation]
+ * en vez de decidir sola, para que el llamador muestre un selector.
  */
 class AndroidChargerAppLauncher(
     private val context: Context,
@@ -26,6 +28,10 @@ class AndroidChargerAppLauncher(
         if (candidates.isEmpty()) return LaunchResult.NoProviderInfo
 
         val installed = candidates.filter { isInstalled(it.androidPackage) }
+
+        if (installed.size >= 2) {
+            return LaunchResult.NeedsDisambiguation(installed)
+        }
 
         val chosen = when {
             installed.size == 1 -> installed.single()
@@ -44,6 +50,7 @@ class AndroidChargerAppLauncher(
             is LaunchResult.OpenedApp -> launchApp(result.provider)
             is LaunchResult.OpenedStore -> launchStore(result.provider)
             LaunchResult.NoProviderInfo -> Unit // nada que lanzar; la UI debe haber filtrado este caso antes
+            is LaunchResult.NeedsDisambiguation -> Unit // la UI debe mostrar el selector y volver a llamar con la elegida
         }
     }
 

@@ -104,6 +104,20 @@
       "androidPackage": "com.enredats.electromaps",
       "deepLinkScheme": null,
       "playStoreId": "com.enredats.electromaps"
+    },
+    {
+      "providerId": "edp",
+      "displayName": "EDP Charge",
+      "androidPackage": "es.edp.edpcharge",
+      "deepLinkScheme": null,
+      "playStoreId": "es.edp.edpcharge"
+    },
+    {
+      "providerId": "eranovum",
+      "displayName": "Eranovum",
+      "androidPackage": "com.placetoplug.eranovum",
+      "deepLinkScheme": null,
+      "playStoreId": "com.placetoplug.eranovum"
     }
   ]
 }

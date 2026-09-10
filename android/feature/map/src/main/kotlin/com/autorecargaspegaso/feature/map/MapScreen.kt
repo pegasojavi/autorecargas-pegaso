@@ -22,11 +22,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.ElectricCar
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Outlet
+import androidx.compose.material.icons.filled.Power
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
@@ -51,6 +56,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
@@ -289,6 +297,14 @@ private fun FilterRow(
                 selected = type in filters.connectorTypes,
                 onClick = { onToggleConnector(type) },
                 label = { Text(connectorTypeLabel(type)) },
+                leadingIcon = {
+                    // Decorativo (contentDescription = null): el texto completo y
+                    // localizado sigue visible en `label`, que ya es lo que
+                    // TalkBack anuncia — el icono solo agiliza el escaneo visual
+                    // del chip (petición del usuario), no sustituye el texto
+                    // accesible (CLAUDE.md sección 9).
+                    Icon(connectorTypeIcon(type), contentDescription = null)
+                },
             )
         }
         item {
@@ -313,6 +329,29 @@ private fun connectorTypeLabel(type: ConnectorType): String = when (type) {
     ConnectorType.DOMESTIC -> stringResource(R.string.map_filter_connector_domestic)
     ConnectorType.WIRELESS -> stringResource(R.string.map_filter_connector_wireless)
     ConnectorType.UNKNOWN -> stringResource(R.string.map_filter_connector_unknown)
+}
+
+/**
+ * Icono representativo por tipo de conector, para agilizar el escaneo visual
+ * del filtro (petición del usuario). Ninguno es un logo de marca (evita
+ * problemas de trademark, en particular para TESLA) — todos son iconos
+ * genéricos del catálogo de Material Icons Extended, verificados contra la
+ * versión real de la librería usada en el proyecto (`material-icons-extended`
+ * 1.7.8): Power, Bolt, ElectricCar, Outlet y Wifi existen los cuatro como
+ * `Icons.Filled.*`.
+ */
+private fun connectorTypeIcon(type: ConnectorType): ImageVector = when (type) {
+    // AC lento (Tipo 1/2/3): icono genérico de "enchufe/corriente".
+    ConnectorType.TYPE_1, ConnectorType.TYPE_2, ConnectorType.TYPE_3 -> Icons.Filled.Power
+    // DC rápido (CCS1/CCS2/CHAdeMO): rayo, para diferenciarlo visualmente del AC lento.
+    ConnectorType.CCS1, ConnectorType.CCS2, ConnectorType.CHADEMO -> Icons.Filled.Bolt
+    // Tesla: coche eléctrico genérico, nunca el logo de la marca.
+    ConnectorType.TESLA -> Icons.Filled.ElectricCar
+    // Enchufe doméstico: icono de toma de corriente de pared.
+    ConnectorType.DOMESTIC -> Icons.Filled.Outlet
+    // Inalámbrico: sin icono oficial de carga inductiva en el catálogo, "sin cable" por convención.
+    ConnectorType.WIRELESS -> Icons.Filled.Wifi
+    ConnectorType.UNKNOWN -> Icons.Filled.Power
 }
 
 /** Lista de cargadores ordenada por distancia al centro actual del mapa (a petición del usuario). */
@@ -468,7 +507,16 @@ private fun OsmMapView(
 
     AndroidView(
         factory = { mapView },
-        modifier = modifier,
+        // El mapa se pintaba por encima de menús/chips Material3 en
+        // dispositivo real (bug reportado): los componentes Material3
+        // (SearchBar, FilterChip, CenterAlignedTopAppBar, FAB) usan `Surface`
+        // internamente, que aplica compositing offscreen para su sombra/
+        // elevación tonal; la `View` clásica de osmdroid embebida vía este
+        // `AndroidView` no participaba de ese mismo modo de compositing, así
+        // que el orden de pintado declarado por Compose dejaba de
+        // respetarse. Forzar aquí el mismo modo de compositing resuelve el
+        // conflicto sin tocar el resto de la jerarquía.
+        modifier = modifier.graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen),
         update = { view ->
             view.overlays.clear()
 
@@ -508,8 +556,14 @@ private fun OsmMapView(
 
 private fun reportMapMoved(mapView: MapView, onMapMoved: (Double, Double, Double) -> Unit) {
     val center = mapView.mapCenter
+    // Tope subido de 100 a 500 km (bug real detectado en dispositivo): con
+    // 100 km, hacer zoom out a una zona amplia (varias regiones, un país)
+    // dejaba la query fija en ese círculo, mostrando solo cargadores de una
+    // sub-zona pequeña en vez de todo el área visible en pantalla. Ver
+    // también ChargerRepository.maxResultsFor, que hay que subir en
+    // proporción para no truncar los resultados en zonas grandes y densas.
     val distanceKm = runCatching {
-        (mapView.boundingBox.diagonalLengthInMeters / 2.0 / 1000.0).coerceIn(1.0, 100.0)
+        (mapView.boundingBox.diagonalLengthInMeters / 2.0 / 1000.0).coerceIn(1.0, 500.0)
     }.getOrDefault(25.0)
     onMapMoved(center.latitude, center.longitude, distanceKm)
 }

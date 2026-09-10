@@ -39,7 +39,12 @@ class OcmChargerRepository(
             throw AppErrorException(AppError.Unexpected(throwable))
         }
 
-    private fun maxResultsFor(distanceKm: Double): Int = (distanceKm * 20).toInt().coerceIn(200, 2000)
+    // Tope subido de 2000 a 5000 en proporción al nuevo tope de radio en
+    // MapScreen.reportMapMoved (100 -> 500 km): si no se sube también este
+    // límite, una zona grande y densa consultada a 500 km se seguía
+    // truncando en 2000 resultados aunque la query ya pidiera el radio
+    // correcto.
+    private fun maxResultsFor(distanceKm: Double): Int = (distanceKm * 20).toInt().coerceIn(200, 5000)
 }
 
 /** Envuelve un [AppError] como excepción para poder propagarlo dentro de [Result.failure]. */

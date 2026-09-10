@@ -5,6 +5,7 @@
     "fastned": ["plugsurfing"],
     "zunder": ["waylet", "electromaps"],
     "endesa-x": ["electromaps"],
-    "eranovum": ["zunder"]
+    "eranovum": ["zunder", "waylet"],
+    "iberdrola": ["waylet"]
   }
 }

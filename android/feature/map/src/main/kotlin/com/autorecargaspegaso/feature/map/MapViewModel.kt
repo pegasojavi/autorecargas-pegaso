@@ -73,7 +73,14 @@ class MapViewModel(
     private val getDirections: (Charger) -> Unit,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<MapUiState>(MapUiState.Loading)
+    // Arranca ya en Success (vacío, isRefreshing = true) en vez de Loading:
+    // así el primer frame ya monta buscador/filtros/mapa (aunque vacíos) en
+    // vez de un spinner sin chrome que luego se sustituye de golpe por todo
+    // el árbol de Compose — ese remontaje completo era el "parpadeo que
+    // afecta a todo el formato y ajuste de menús" reportado en dispositivo.
+    // MapUiState.Loading queda reservado para un fallo real de red sin
+    // ningún dato previo (ver applyChargersResult/beginLoadOrRefresh).
+    private val _uiState = MutableStateFlow<MapUiState>(MapUiState.Success(allChargers = emptyList(), isRefreshing = true))
     val uiState: StateFlow<MapUiState> = _uiState.asStateFlow()
 
     /** Eventos puntuales de "mueve la cámara aquí y marca este sitio" — el mapa (Composable) los consume una vez, no son estado persistente. */

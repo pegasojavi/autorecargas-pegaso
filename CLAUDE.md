@@ -44,22 +44,32 @@
   2. Escáner QR → el usuario escanea el código físico del cargador con la
      cámara desde dentro de la app.
 - **Lógica de apertura (lanzador), igual en ambas plataformas — regla
-  revisada (sustituye la versión anterior "siempre preguntar"):**
+  revisada dos veces, versión vigente 2026-09-10:**
   - Una única app candidata → se abre directamente (deep link / Universal
     Link / App Link, según plataforma); si no está instalada, se lleva al
     usuario a su ficha en la tienda.
   - **Más de una app candidata** (operador nativo del cargador + apps de
     roaming que también dan acceso, p. ej. Waylet/Electromaps sobre
-    Endesa/Zunder/Eranovum): **se resuelve sin preguntar**, con esta
-    prioridad:
+    Endesa/Zunder/Eranovum): tres casos, solo el tercero muestra selector:
     1. Si el usuario tiene **instalada exactamente una** de las apps
-       candidatas → se abre esa, sea o no la del operador nativo.
-    2. En cualquier otro caso (ninguna instalada, o varias instaladas a la
-       vez) → se abre (o se lleva a la tienda de) la app del **operador
-       nativo** del cargador, no una de roaming.
-  - Ya no hay un selector obligatorio en el flujo por defecto (ver sección
-    3 para el detalle técnico y sección 5 para cómo se compila qué
-    cargadores son multi-app).
+       candidatas → se abre esa directamente, sea o no la del operador
+       nativo. Sin preguntar.
+    2. Si el usuario **no tiene ninguna instalada** → se abre (o se lleva a
+       la ficha en la tienda de) la app del **operador nativo** del
+       cargador, no una de roaming. Sin preguntar.
+    3. **Si el usuario tiene dos o más instaladas a la vez** → **se muestra
+       un selector** con esas apps instaladas (solo las instaladas, no
+       todas las candidatas) para que el usuario elija cuál abrir. Esto
+       revierte, solo para este caso concreto, la decisión anterior de "no
+       selector nunca" — los casos 1 y 2 siguen resolviendo sin preguntar.
+  - Historial de esta regla, para que quede claro qué se revirtió y qué no:
+    versión original (fase de aggregator transaccional) = "siempre
+    preguntar"; primera revisión (2026-09-08) = "nunca preguntar, gana la
+    instalada única o si no el operador nativo"; revisión actual
+    (2026-09-10, la vigente) = igual que la anterior salvo que el caso
+    "varias instaladas a la vez" ahora sí pregunta. Ver sección 3 para el
+    detalle técnico (`LaunchResult.NeedsDisambiguation`) y sección 5 para
+    cómo se compila qué cargadores son multi-app.
 - **Sin cuentas de usuario, sin backend propio:** no hace falta login, no
   hay integración con APIs de operadores, no hay servidor propio ni
   pasarela de pago propia.
@@ -180,13 +190,15 @@ Aplica por igual a la app Android y a la app iOS.
      desambiguación propia, delega en el mecanismo estándar del sistema
      operativo (que ya resuelve él solo si hay varias apps de navegación
      instaladas).
-- **Lanzador de app de proveedor** (resuelve sin preguntar, ver sección 0
-  para la regla completa):
+- **Lanzador de app de proveedor** (ver sección 0 para la regla completa):
   - Una sola app candidata → la abre directamente; si no está instalada,
     lleva a su ficha en la tienda.
-  - Más de una app candidata (operador nativo + apps de roaming) →
-    si exactamente una está instalada, se abre esa; si no, se usa la app
-    del operador nativo (instalada o, si no, su ficha en la tienda).
+  - Más de una app candidata (operador nativo + apps de roaming): si
+    exactamente una está instalada, se abre esa sin preguntar; si ninguna
+    está instalada, se usa la app del operador nativo (o su ficha en la
+    tienda) sin preguntar; **si hay dos o más instaladas a la vez, se
+    muestra un selector** con las apps instaladas para que el usuario
+    elija.
 - **Escáner QR:** abre la cámara, decodifica el QR físico de un cargador,
   identifica proveedor(es) y aplica la misma lógica de lanzador de arriba.
 - **Selector de idioma:** ajuste accesible desde la app que lista los
@@ -270,11 +282,18 @@ data class Charger(
 sealed interface LaunchResult {
     data class OpenedApp(val provider: ProviderAppInfo) : LaunchResult
     data class OpenedStore(val provider: ProviderAppInfo) : LaunchResult
+    // Solo cuando hay 2+ apps candidatas instaladas a la vez (sección 0,
+    // revisión 2026-09-10) — `candidates` son solo las instaladas, nunca
+    // incluye apps no instaladas. El llamador debe mostrar un selector y
+    // luego invocar `launch(provider)` con la elegida.
+    data class NeedsDisambiguation(val candidates: List<ProviderAppInfo>) : LaunchResult
 }
 
 interface ChargerAppLauncher {
-    // Resuelve sin preguntar al usuario (sección 0): una única app instalada
-    // gana; si no, gana el operador nativo. Nunca bloquea con un selector.
+    // Sección 0 (revisión 2026-09-10): una única app instalada gana sin
+    // preguntar; si ninguna está instalada, gana el operador nativo sin
+    // preguntar; si hay 2+ instaladas a la vez, devuelve
+    // NeedsDisambiguation en vez de decidir sola.
     fun resolve(charger: Charger): LaunchResult
     fun launch(provider: ProviderAppInfo)
 }
@@ -316,11 +335,16 @@ struct Charger {
 enum LaunchResult {
     case openedApp(ProviderAppInfo)
     case openedStore(ProviderAppInfo)
+    // Solo cuando hay 2+ apps candidatas instaladas a la vez (sección 0,
+    // revisión 2026-09-10) — `candidates` son solo las instaladas.
+    case needsDisambiguation(candidates: [ProviderAppInfo])
 }
 
 protocol ChargerAppLauncher {
-    // Resuelve sin preguntar al usuario (sección 0): una única app instalada
-    // gana; si no, gana el operador nativo. Nunca bloquea con un selector.
+    // Sección 0 (revisión 2026-09-10): una única app instalada gana sin
+    // preguntar; si ninguna está instalada, gana el operador nativo sin
+    // preguntar; si hay 2+ instaladas a la vez, devuelve
+    // needsDisambiguation en vez de decidir sola.
     func resolve(charger: Charger) -> LaunchResult
     func launch(provider: ProviderAppInfo)
 }
@@ -332,13 +356,15 @@ protocol ChargerAppLauncher {
   estática mantenida por el equipo** (JSON o recurso embebido), **no** una
   API remota — cada plataforma mantiene la suya, poblada desde el mismo
   `docs/providers/<red>.md`.
-- **Regla de resolución multi-app (idéntica en ambas plataformas, revisada):**
-  cuando un cargador tiene más de una app candidata (`nativeProviderId` +
-  `roamingProviderIds`), `resolve` decide **sin preguntar al usuario**: si
-  hay exactamente una candidata instalada, se abre esa; en cualquier otro
-  caso (ninguna o varias instaladas) se usa la del operador nativo. No hay
-  selector en el flujo por defecto — ver sección 5 para cómo se compila la
-  lista de `roamingProviderIds` de cada cargador.
+- **Regla de resolución multi-app (idéntica en ambas plataformas, revisión
+  2026-09-10):** cuando un cargador tiene más de una app candidata
+  (`nativeProviderId` + `roamingProviderIds`), `resolve` decide así: si hay
+  exactamente una candidata instalada, se abre esa sin preguntar; si no hay
+  ninguna instalada, se usa la del operador nativo sin preguntar; **si hay
+  dos o más instaladas a la vez, `resolve` devuelve `NeedsDisambiguation`**
+  y el llamador muestra un selector con esas apps instaladas para que el
+  usuario elija. Ver sección 5 para cómo se compila la lista de
+  `roamingProviderIds` de cada cargador.
 - **"Cómo llegar" no es parte de `ChargerAppLauncher`:** es una acción
   aparte y más simple — abrir la app de navegación nativa de la plataforma
   con las coordenadas del cargador — que no depende de `ProviderDirectory`
@@ -475,10 +501,12 @@ Al cargar un cargador desde OCM con operador nativo `X`, `roamingProviderIds`
 se rellena consultando `RoamingPartnerships[X]` — no hace falta (ni es
 posible) que el dataset lo indique cargador a cargador.
 
-**Regla de resolución (sección 0/3, sin selector por defecto):** una única
-app instalada gana; si no, gana el operador nativo. Esta tabla de roaming
-es la que alimenta esa decisión — mantenerla actualizada es tan importante
-como `ProviderDirectory` en sí.
+**Regla de resolución (sección 0/3, revisión 2026-09-10):** una única app
+instalada gana sin preguntar; si ninguna está instalada, gana el operador
+nativo sin preguntar; si hay dos o más instaladas a la vez, se muestra un
+selector con las instaladas. Esta tabla de roaming es la que alimenta esa
+decisión — mantenerla actualizada es tan importante como `ProviderDirectory`
+en sí.
 
 ### Tarea explícita para `researcher-android` / `researcher-ios`
 
@@ -958,6 +986,71 @@ de decisión, son trabajo pendiente de `builder-android`):**
   - **No se veía el buscador de tipo de cargador (filtros tapados):** ya
     corregido en la ronda anterior (`012963e`); confirmado que sigue
     correcto tras esta ronda de cambios.
+- ✅ **Resuelto (2026-09-10): crash al abrir la app.** `AppCompatActivity`
+  (appcompat 1.7.0) no delega `setContentView()` en
+  `ComponentActivity.setContentView()`, así que nunca queda fijado
+  `ViewTreeNavigationEventDispatcherOwner` en el decor view — algo que
+  `NavDisplay` (navigation3-ui 1.0.1) exige y sin lo cual lanza
+  `IllegalStateException` al arrancar. Causa raíz verificada byte a byte
+  con `javap` sobre los `.class` reales. Corregido proveyendo
+  `LocalNavigationEventDispatcherOwner` explícitamente en `MainActivity`
+  (que ya es `NavigationEventDispatcherOwner` por herencia de
+  `ComponentActivity`), sin volver a `ComponentActivity` puro (rompería el
+  selector de idioma).
+- ✅ **Resuelto (2026-09-10): tercera ronda de bugs reportados en
+  dispositivo real, todos corregidos, revisados por `researcher-android` y
+  compilados en verde antes de entregar (proceso builder→researcher ya
+  aplicado por primera vez de principio a fin, CLAUDE.md sección 8):**
+  - **Mercadona y Repsol NO estaban mapeados de verdad** (a pesar de
+    parecerlo): el título real de OCM para Mercadona es `"Mercadona"` (no
+    aparecía como Iberdrola en el código) y para Repsol es
+    `"Repsol - Ibil (ES)"` (no existía ninguna entrada) — ambos caían como
+    "operador sin mapear". Añadidos a `OcmOperatorMapping.kt`, con
+    `"Mercadona" → iberdrola` y `"Repsol - Ibil (ES)" → waylet`; además
+    `"iberdrola"` gana una entrada de roaming hacia `waylet` en
+    `roaming.json` (Mercadona instala puntos de ambos operadores).
+  - **EDP y Eranovum no tenían app propia dada de alta:** añadidos `edp`
+    (`es.edp.edpcharge`, "EDP Charge") y `eranovum`
+    (`com.placetoplug.eranovum`) a `providers.json` y `OcmOperatorMapping.kt`
+    (`"EDP"` y `"Eranovum (ES)"`); `roaming.json` amplía
+    `"eranovum": ["zunder", "waylet"]` (antes solo Zunder).
+  - **Regla de resolución multi-app revisada (ver sección 0/3/5):** ahora,
+    cuando hay dos o más apps candidatas **instaladas a la vez**, se
+    muestra un selector (`LaunchResult.NeedsDisambiguation`,
+    `ProviderDisambiguationDialog` en `Navigation.kt`) en vez de resolver
+    en silencio hacia el operador nativo. Los casos "una instalada" y
+    "ninguna instalada" no cambian.
+  - **"El mapa está delante de los menús":** conflicto de compositing entre
+    el `AndroidView` que envuelve el `MapView` de osmdroid y los `Surface`
+    internos de Material3 (que usan compositing offscreen para su sombra/
+    elevación). Corregido forzando el mismo modo de compositing en el
+    `AndroidView` (`Modifier.graphicsLayer(compositingStrategy =
+    CompositingStrategy.Offscreen)`). Verificado que `ModalBottomSheet` y el
+    nuevo `AlertDialog` de desambiguación no se ven afectados (ventana
+    propia de Material3).
+  - **Iconos en el filtro de tipo de conector** (petición de producto, para
+    agilizar el escaneo visual): cada `FilterChip` de `FilterRow` gana un
+    `leadingIcon` (Power para AC lento, Bolt para DC rápido, ElectricCar
+    para Tesla —sin logo de marca—, Outlet para doméstico, Wifi para
+    inalámbrico), manteniendo el texto completo en `label` (TalkBack sigue
+    anunciando el nombre completo del conector — confirmado que `FilterChip`
+    de Material3 fusiona icono+label+estado en un único nodo de semántica).
+  - **Radio de carga limitado a una sub-zona pequeña al hacer zoom out:**
+    `reportMapMoved()` calculaba correctamente el radio a partir de la
+    diagonal real del área visible del mapa, pero lo limitaba a 100 km — si
+    el usuario hacía zoom a una zona más amplia, la consulta a OCM se
+    quedaba fija en ese círculo. Subido a 500 km (con `maxResultsFor`
+    subido en proporción, de 2000 a 5000, para no truncar zonas grandes y
+    densas — riesgo no confirmado: no se sabe si OCM impone un tope propio
+    por debajo de 5000, a vigilar en zonas densas reales).
+  - **Parpadeo que afectaba a todo el formato/menús al abrir el mapa:**
+    `MapViewModel` arrancaba en `MapUiState.Loading` (un spinner sin
+    buscador/filtros/mapa) y tardaba varias llamadas de red en llegar al
+    primer `Success`, montando todo el resto de golpe. Corregido
+    arrancando directamente en `MapUiState.Success(emptyList(),
+    isRefreshing = true)` — el buscador/filtros/mapa se montan en el primer
+    frame, con un `LinearProgressIndicator` mientras `isRefreshing` es
+    verdadero.
 
 Ya no hay pendientes 🔶 de decisión del product owner sobre el alcance — lo
 que queda de la lista original es ejecución:

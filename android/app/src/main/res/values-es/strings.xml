@@ -3,4 +3,6 @@
     <string name="app_name">AutoRecargas Pegaso</string>
     <string name="qr_not_recognized">No hemos reconocido este código QR</string>
     <string name="provider_app_unknown">Todavía no conocemos la app de este operador</string>
+    <string name="provider_disambiguation_title">Elige qué app abrir</string>
+    <string name="provider_disambiguation_cancel">Cancelar</string>
 </resources>
