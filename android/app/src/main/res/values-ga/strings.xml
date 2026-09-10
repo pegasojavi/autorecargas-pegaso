@@ -5,4 +5,6 @@
     <string name="provider_app_unknown">Níl aithne againn ar aip an oibreora seo fós</string>
     <string name="provider_disambiguation_title">Roghnaigh aip le hoscailt</string>
     <string name="provider_disambiguation_cancel">Cealaigh</string>
+    <string name="settings_title">Teanga</string>
+    <string name="settings_system_language">Teanga an chórais</string>
 </resources>

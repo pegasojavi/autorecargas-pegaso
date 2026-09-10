@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.os.LocaleListCompat
 import org.xmlpull.v1.XmlPullParser
 import java.util.Locale
@@ -74,7 +75,7 @@ fun SettingsScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Idioma") },
+                title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
@@ -86,7 +87,7 @@ fun SettingsScreen(onBack: () -> Unit) {
         LazyColumn(modifier = Modifier.fillMaxWidth().padding(padding)) {
             item {
                 ListItem(
-                    headlineContent = { Text("Idioma del sistema") },
+                    headlineContent = { Text(stringResource(R.string.settings_system_language)) },
                     leadingContent = { RadioButton(selected = selectedTag == null, onClick = null) },
                     modifier = Modifier.fillMaxWidth().clickable {
                         selectedTag = null

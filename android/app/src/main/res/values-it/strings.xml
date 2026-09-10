@@ -5,4 +5,6 @@
     <string name="provider_app_unknown">Non conosciamo ancora l\'app di questo operatore</string>
     <string name="provider_disambiguation_title">Scegli un\'app da aprire</string>
     <string name="provider_disambiguation_cancel">Annulla</string>
+    <string name="settings_title">Lingua</string>
+    <string name="settings_system_language">Lingua di sistema</string>
 </resources>

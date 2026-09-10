@@ -5,4 +5,6 @@
     <string name="provider_app_unknown">Încă nu cunoaștem aplicația acestui operator</string>
     <string name="provider_disambiguation_title">Alege o aplicație de deschis</string>
     <string name="provider_disambiguation_cancel">Anulează</string>
+    <string name="settings_title">Limbă</string>
+    <string name="settings_system_language">Limba sistemului</string>
 </resources>

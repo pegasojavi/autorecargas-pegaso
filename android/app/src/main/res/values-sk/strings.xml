@@ -5,4 +5,6 @@
     <string name="provider_app_unknown">Aplikáciu tohto operátora zatiaľ nepoznáme</string>
     <string name="provider_disambiguation_title">Vyberte aplikáciu na otvorenie</string>
     <string name="provider_disambiguation_cancel">Zrušiť</string>
+    <string name="settings_title">Jazyk</string>
+    <string name="settings_system_language">Jazyk systému</string>
 </resources>

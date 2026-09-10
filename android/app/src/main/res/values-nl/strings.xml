@@ -5,4 +5,6 @@
     <string name="provider_app_unknown">We kennen de app van deze aanbieder nog niet</string>
     <string name="provider_disambiguation_title">Kies een app om te openen</string>
     <string name="provider_disambiguation_cancel">Annuleren</string>
+    <string name="settings_title">Taal</string>
+    <string name="settings_system_language">Systeemtaal</string>
 </resources>

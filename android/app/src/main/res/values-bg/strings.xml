@@ -5,4 +5,6 @@
     <string name="provider_app_unknown">Все още не познаваме приложението на този оператор</string>
     <string name="provider_disambiguation_title">Изберете приложение за отваряне</string>
     <string name="provider_disambiguation_cancel">Отказ</string>
+    <string name="settings_title">Език</string>
+    <string name="settings_system_language">Език на системата</string>
 </resources>

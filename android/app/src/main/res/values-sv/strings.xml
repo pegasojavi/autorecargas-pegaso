@@ -5,4 +5,6 @@
     <string name="provider_app_unknown">Vi känner inte till den här operatörens app än</string>
     <string name="provider_disambiguation_title">Välj en app att öppna</string>
     <string name="provider_disambiguation_cancel">Avbryt</string>
+    <string name="settings_title">Språk</string>
+    <string name="settings_system_language">Systemspråk</string>
 </resources>

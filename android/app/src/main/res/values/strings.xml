@@ -4,4 +4,6 @@
     <string name="provider_app_unknown">We don\'t know this operator\'s app yet</string>
     <string name="provider_disambiguation_title">Choose an app to open</string>
     <string name="provider_disambiguation_cancel">Cancel</string>
+    <string name="settings_title">Language</string>
+    <string name="settings_system_language">System language</string>
 </resources>

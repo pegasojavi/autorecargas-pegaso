@@ -5,4 +5,6 @@
     <string name="provider_app_unknown">Għadna ma nafux l-app ta\' dan l-operatur</string>
     <string name="provider_disambiguation_title">Agħżel app li tiftaħ</string>
     <string name="provider_disambiguation_cancel">Ikkanċella</string>
+    <string name="settings_title">Lingwa</string>
+    <string name="settings_system_language">Lingwa tas-sistema</string>
 </resources>

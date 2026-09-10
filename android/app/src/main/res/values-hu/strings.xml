@@ -5,4 +5,6 @@
     <string name="provider_app_unknown">Ezt a szolgáltatói alkalmazást még nem ismerjük</string>
     <string name="provider_disambiguation_title">Válassz megnyitandó alkalmazást</string>
     <string name="provider_disambiguation_cancel">Mégse</string>
+    <string name="settings_title">Nyelv</string>
+    <string name="settings_system_language">Rendszernyelv</string>
 </resources>
