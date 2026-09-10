@@ -43,6 +43,11 @@ object OcmOperatorMapping {
         // verificados en vivo contra GET /v3/referencedata (2026-09-10).
         "Electromaps" to "electromaps",
         "eTecnic" to "etecnic", // "T" mayúscula en el título real de OCM, ojo
+        // Mismo patrón otra vez, verificado en dispositivo real: cargadores
+        // cuyo operador nativo en OCM es Plenergy no abrían ninguna app.
+        // Título real verificado en vivo contra GET /v3/referencedata
+        // (2026-09-10): exactamente "Plenergy (ES)".
+        "Plenergy (ES)" to "plenergy",
 
 
         // Shell Recharge: no existe una entrada genérica "Shell Recharge"

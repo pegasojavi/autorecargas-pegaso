@@ -49,6 +49,7 @@
         <package android:name="com.placetoplug.eranovum" /> <!-- Eranovum -->
         <package android:name="com.atlante.charging" /> <!-- myAtlante -->
         <package android:name="com.etecnic.evchargenew" /> <!-- EVcharge (eTecnic) -->
+        <package android:name="com.plenoil.plenergyapp" /> <!-- Plenergy -->
     </queries>
 
     <application

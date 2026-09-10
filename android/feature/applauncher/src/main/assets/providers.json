@@ -132,6 +132,13 @@
       "androidPackage": "com.etecnic.evchargenew",
       "deepLinkScheme": null,
       "playStoreId": "com.etecnic.evchargenew"
+    },
+    {
+      "providerId": "plenergy",
+      "displayName": "Plenergy",
+      "androidPackage": "com.plenoil.plenergyapp",
+      "deepLinkScheme": null,
+      "playStoreId": "com.plenoil.plenergyapp"
     }
   ]
 }
