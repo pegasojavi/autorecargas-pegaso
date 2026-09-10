@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Skeniraj polnilno mesto</string>
+    <string name="qrscanner_permission_rationale">Kamero potrebujemo za branje QR kode polnilnice. Slika se nikoli ne shrani.</string>
+    <string name="qrscanner_permission_action">Dovoli kamero</string>
+</resources>

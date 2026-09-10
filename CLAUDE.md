@@ -902,9 +902,6 @@ de decisión, son trabajo pendiente de `builder-android`):**
     hardcodeada — usando `AppCompatDelegate.setApplicationLocales`.
   - Strings ES/EN externalizados a `strings.xml` en los 4 módulos con UI
     (`app`, `feature:map`, `feature:chargerdetail`, `feature:qrscanner`).
-    **Pendiente real todavía:** convertir los 20 idiomas restantes de
-    `docs/i18n/*.properties` (ya redactados) al formato `strings.xml` — es
-    trabajo mecánico, no de diseño.
   - Icono de app real (negro + rayo bronce, tema "Eco").
   - QR: si el contenido escaneado es una URL http(s), se abre con el
     mecanismo nativo de Android (resuelve app-instalada-o-navegador solo);
@@ -1039,10 +1036,87 @@ de decisión, son trabajo pendiente de `builder-android`):**
     `reportMapMoved()` calculaba correctamente el radio a partir de la
     diagonal real del área visible del mapa, pero lo limitaba a 100 km — si
     el usuario hacía zoom a una zona más amplia, la consulta a OCM se
-    quedaba fija en ese círculo. Subido a 500 km (con `maxResultsFor`
-    subido en proporción, de 2000 a 5000, para no truncar zonas grandes y
-    densas — riesgo no confirmado: no se sabe si OCM impone un tope propio
-    por debajo de 5000, a vigilar en zonas densas reales).
+    quedaba fija en ese círculo. Subido a 500 km. **Superado por el
+    rediseño de 2026-09-10 (ver más abajo): el tope de área en sí era la
+    causa, no su tamaño — sustituido por consulta directa al rectángulo
+    visible (`boundingbox`), que no tiene ese problema a ningún zoom.**
+
+- ✅ **Resuelto (2026-09-10), cuarta ronda — rediseño de la consulta al mapa
+  + inversión del modelo de filtros + mejoras visuales, trabajado
+  directamente por el usuario con un agente (fuera del flujo normal de
+  handoff builder→researcher de la sesión principal) y revisado a
+  posteriori por `researcher-android` antes de compilar/comprometer (OK en
+  ambos casos, con reservas menores no bloqueantes anotadas abajo):**
+  - **"Círculo de cargadores" al hacer zoom out (causa raíz, no solo el
+    síntoma):** subir el tope de radio (100→500 km, ronda anterior) solo
+    retrasaba el bug, no lo eliminaba — cualquier círculo con tope deja
+    fuera las esquinas de un rectángulo visible más grande. Sustituido por
+    consulta directa al **rectángulo visible real** vía el parámetro nativo
+    `boundingbox` de OCM (`GET /v3/poi?boundingbox=(lat,lng),(lat2,lng2)`,
+    esquina noroeste primero — verificado independientemente contra
+    `ocm-openapi-spec.yaml` y `POIManager.cs` del repo oficial
+    `openchargemap/ocm-system`: al usar `boundingbox`, el servidor anula
+    `latitude`/`longitude`/`distance` sin conflicto). Por construcción, un
+    rectángulo no puede producir el artefacto circular a ningún nivel de
+    zoom — ya no hace falta ningún tope de área. `maxResultsFor` (200–5000)
+    sigue siendo el único límite; riesgo ya documentado y aceptado (no se
+    sabe si OCM impone un tope propio por debajo de 5000).
+  - **Filtros de conector "se borraban" en cada recarga:** `MapViewModel`
+    construía un `MapUiState.Success` nuevo sin arrastrar `filters` en cada
+    recarga (GPS/búsqueda/pan-zoom) — corregido preservando los filtros del
+    estado anterior.
+  - **Chips de filtro "al revés":** `ChargerFilters` pasa de modelo de
+    inclusión (`connectorTypes`, vacío = sin filtrar, chip activado = tipo
+    incluido) a modelo de **exclusión** (`excludedConnectorTypes`, vacío =
+    nada excluido = todo visible = todos los chips activados/en color por
+    defecto; pulsar un chip lo excluye). Coincide con la expectativa real
+    del usuario ("si el icono se ve en color está activado").
+  - **Glifo Tesla/NACS:** el icono genérico de coche eléctrico se sustituye
+    por una silueta esquemática propia del conector NACS real (cápsula
+    compacta + 5 pines en línea, dibujada a mano con `Canvas`/`DrawScope`,
+    igual que Type 1/2/3/CCS/CHAdeMO de la ronda anterior) — verificada
+    contra descripciones técnicas públicas del conector (no una imagen con
+    copyright), sin usar el logo de la marca.
+  - **Icono de la app en 3D:** el rayo bronce plano gana volumen (sombra
+    desplazada + degradado diagonal + brillo especular recortado a la
+    misma silueta) vía gradientes `<aapt:attr>` dentro del `VectorDrawable`
+    — sintaxis oficial de AAPT2, confirmada contra la documentación de
+    Android.
+  - **Nuevo documento de investigación:** `docs/providers/no-app-operators.md`
+    — operadores europeos sin app propia de consumidor confirmada (Ubitricity/
+    Shell, ChargePlace Scotland, Berliner Stadtwerke, MOBI.E, GreenFlux, PGE,
+    sindicatos departamentales franceses), con fuente citada por fila y
+    "Unclear" donde no hay certeza. Reserva menor no bloqueante: la cita de
+    Ubitricity es más débil de lo que sugiere el documento (una de las dos
+    fuentes no confirma explícitamente la retirada de la app propia).
+  - **i18n completa: los 24 idiomas oficiales de la UE + 5 cooficiales,
+    convertidos a `strings.xml` real en los 4 módulos con UI (108 ficheros
+    nuevos), no solo ES/EN.** 24 oficiales: además de ES/EN/FR/DE del MVP,
+    ahora también IT, PT, NL, PL, RO, CS, SK, HU, BG, EL, HR, SL, SV, DA,
+    FI, ET, LV, LT, GA, MT. Más 5 cooficiales traducidos **desde cero** (sin
+    borrador previo): CA (catalán), EU (euskera), GL (gallego), LB
+    (luxemburgués), FY (frisón occidental). Todos dados de alta en
+    `locales_config.xml` (29 entradas: EN+ES+27). **Corrección importante
+    sobre el propio proceso:** los borradores en `docs/i18n/*.properties`
+    (sección 0/6, "ya redactados") resultaron estar **obsoletos** — usaban
+    un esquema de claves de una fase de producto anterior
+    (`charger_detail_address_label`, `paywall_*`, `map_legend_*`...) que no
+    coincide con ninguna clave real que el código actual use. Convertirlos
+    mecánicamente habría producido 27 idiomas de strings muertos sin
+    traducir la UI real. En su lugar, cada traducción se generó desde el
+    inventario real de 39 claves de los 4 módulos actuales — `docs/i18n/*.properties`
+    queda como material obsoleto, no como fuente de esta traducción.
+    Validado estructuralmente (XML bien formado, mismo conjunto de claves
+    que el fichero base por módulo, sin duplicados, marca "AutoRecargas
+    Pegaso" y términos técnicos CCS1/CCS2/CHAdeMO/Tesla/"≥ 50 kW" intactos
+    sin traducir, placeholder `%1$s` conservado) en los 112 ficheros no-base
+    de los 4 módulos — **no** es una revisión de calidad lingüística.
+    **Pendiente antes de publicar (ver también sección 0/12 anteriores):**
+    QA por hablante nativo, con menor confianza señalada explícitamente en
+    irlandés y maltés, y extendida de facto a todo el lote de 27 (catalán,
+    euskera y gallego con algo más de confianza por ser lenguas de mayor
+    recurso; euskera, luxemburgués y frisón sin precedente previo de
+    localización de UI en el proyecto).
   - **Parpadeo que afectaba a todo el formato/menús al abrir el mapa:**
     `MapViewModel` arrancaba en `MapUiState.Loading` (un spinner sin
     buscador/filtros/mapa) y tardaba varias llamadas de red en llegar al
@@ -1066,19 +1140,20 @@ que queda de la lista original es ejecución:
    redes de la sección 0 caben en el plazo de 2 meses por plataforma.
 4. Integrar la API de Open Charge Map (`opendata=true`) en ambas apps, y
    excluir/tratar aparte cualquier punto con licencia restringida.
-5. ✅ **Fase 3 adelantada por completo:** los 24 idiomas oficiales de la UE
-   ya tienen fichero en `docs/i18n/*.properties` (43 claves cada uno, mismo
-   formato), no solo los 4 del MVP — formato de staging neutro, pendiente
-   de convertir a `values-<lang>/strings.xml` /
-   `<lang>.lproj/Localizable.strings` cuando exista el scaffold real.
-   **Antes de publicar cualquiera**, pasada de QA por hablante nativo — en
-   particular irlandés (`ga`) y maltés (`mt`), señalados como los de menor
-   confianza por ser los idiomas de menor recurso del lote; el resto
-   también sin revisión nativa, solo de calidad razonable. Verificar
-   además que el selector de idioma de cada plataforma los detecta
-   dinámicamente (sección 6) y decidir si el MVP lanza con los 24 desde el
-   día 1 o se mantiene el lanzamiento escalonado (4 al inicio) ya
-   planteado en la sección 0.
+5. ✅ **Fase 3 completada en Android** (2026-09-10): los 24 idiomas
+   oficiales de la UE + 5 cooficiales (catalán, euskera, gallego,
+   luxemburgués, frisón) están convertidos a `values-<lang>/strings.xml`
+   real en los 4 módulos Android con UI — ver detalle y matices en la
+   entrada de la sección 12 de esta misma fecha (en particular, que
+   `docs/i18n/*.properties` quedó obsoleto y no se usó como fuente).
+   **Pendiente para iOS:** convertir a `<lang>.lproj/Localizable.strings`
+   cuando exista el scaffold real de esa plataforma. **Antes de publicar
+   cualquiera**, pasada de QA por hablante nativo — en particular irlandés
+   (`ga`) y maltés (`mt`), señalados como los de menor confianza; el resto
+   también sin revisión nativa, solo validado estructuralmente (no
+   lingüísticamente). Decidir si el lanzamiento es con los 29 desde el día
+   1 o escalonado (4 del MVP al inicio) sigue siendo una decisión de
+   producto abierta, no técnica.
 6. ✅ Primer borrador de la política de privacidad en
    `docs/legal/privacy-policy.md` — **tiene campos `[PENDIENTE: ...]`** (NIF/
    razón social, email de contacto, fecha de publicación) que hay que

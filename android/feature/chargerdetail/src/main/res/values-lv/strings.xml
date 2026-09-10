@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chargerdetail_open_app_action">Atvērt lietotni</string>
+    <string name="chargerdetail_get_directions_action">Maršruts</string>
+    <string name="chargerdetail_connector_type1">1. tips</string>
+    <string name="chargerdetail_connector_type2">2. tips</string>
+    <string name="chargerdetail_connector_type3">3. tips</string>
+    <string name="chargerdetail_connector_ccs1">CCS1</string>
+    <string name="chargerdetail_connector_ccs2">CCS2</string>
+    <string name="chargerdetail_connector_chademo">CHAdeMO</string>
+    <string name="chargerdetail_connector_tesla">Tesla</string>
+    <string name="chargerdetail_connector_domestic">Sadzīves kontaktligzda</string>
+    <string name="chargerdetail_connector_wireless">Bezvadu</string>
+    <string name="chargerdetail_connector_unknown">Savienotājs</string>
+</resources>

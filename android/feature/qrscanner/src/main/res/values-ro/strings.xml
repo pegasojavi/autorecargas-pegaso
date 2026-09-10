@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Scanează punctul de încărcare</string>
+    <string name="qrscanner_permission_rationale">Avem nevoie de cameră pentru a citi codul QR al stației de încărcare. Nicio imagine nu este salvată vreodată.</string>
+    <string name="qrscanner_permission_action">Permite camera</string>
+</resources>

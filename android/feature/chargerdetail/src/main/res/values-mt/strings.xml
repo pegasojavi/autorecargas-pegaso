@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chargerdetail_open_app_action">Iftaħ l-app</string>
+    <string name="chargerdetail_get_directions_action">Direzzjonijiet</string>
+    <string name="chargerdetail_connector_type1">Tip 1</string>
+    <string name="chargerdetail_connector_type2">Tip 2</string>
+    <string name="chargerdetail_connector_type3">Tip 3</string>
+    <string name="chargerdetail_connector_ccs1">CCS1</string>
+    <string name="chargerdetail_connector_ccs2">CCS2</string>
+    <string name="chargerdetail_connector_chademo">CHAdeMO</string>
+    <string name="chargerdetail_connector_tesla">Tesla</string>
+    <string name="chargerdetail_connector_domestic">Soket domestiku</string>
+    <string name="chargerdetail_connector_wireless">Mingħajr fili</string>
+    <string name="chargerdetail_connector_unknown">Konnettur</string>
+</resources>

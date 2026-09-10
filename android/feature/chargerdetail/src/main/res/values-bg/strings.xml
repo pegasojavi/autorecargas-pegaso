@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chargerdetail_open_app_action">Отвори приложение</string>
+    <string name="chargerdetail_get_directions_action">Упътване</string>
+    <string name="chargerdetail_connector_type1">Тип 1</string>
+    <string name="chargerdetail_connector_type2">Тип 2</string>
+    <string name="chargerdetail_connector_type3">Тип 3</string>
+    <string name="chargerdetail_connector_ccs1">CCS1</string>
+    <string name="chargerdetail_connector_ccs2">CCS2</string>
+    <string name="chargerdetail_connector_chademo">CHAdeMO</string>
+    <string name="chargerdetail_connector_tesla">Tesla</string>
+    <string name="chargerdetail_connector_domestic">Битов контакт</string>
+    <string name="chargerdetail_connector_wireless">Безжично</string>
+    <string name="chargerdetail_connector_unknown">Конектор</string>
+</resources>

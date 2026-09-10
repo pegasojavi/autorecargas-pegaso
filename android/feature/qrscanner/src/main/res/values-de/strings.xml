@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Ladepunkt scannen</string>
+    <string name="qrscanner_permission_rationale">Wir benötigen die Kamera, um den QR-Code der Ladestation zu lesen. Es wird nie ein Bild gespeichert.</string>
+    <string name="qrscanner_permission_action">Kamera erlauben</string>
+</resources>

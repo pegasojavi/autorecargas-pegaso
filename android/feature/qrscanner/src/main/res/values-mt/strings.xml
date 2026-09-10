@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Skennja l-punt tal-iċċarġjar</string>
+    <string name="qrscanner_permission_rationale">Għandna bżonn il-kamera biex naqraw il-kodiċi QR tal-charger. L-ebda immaġni ma tiġi salvata.</string>
+    <string name="qrscanner_permission_action">Ippermetti l-kamera</string>
+</resources>

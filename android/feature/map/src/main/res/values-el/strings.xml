@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="map_title">AutoRecargas Pegaso</string>
+    <string name="map_search_placeholder">Αναζήτηση διεύθυνσης ή πόλης</string>
+    <string name="map_locate_me_action">Κεντράρισμα στην τοποθεσία μου</string>
+    <string name="map_search_this_area">Αναζήτηση σε αυτήν την περιοχή</string>
+    <string name="map_filter_connector_type1">Τύπος 1</string>
+    <string name="map_filter_connector_type2">Τύπος 2</string>
+    <string name="map_filter_connector_type3">Τύπος 3</string>
+    <string name="map_filter_connector_ccs1">CCS1</string>
+    <string name="map_filter_connector_ccs2">CCS2</string>
+    <string name="map_filter_connector_chademo">CHAdeMO</string>
+    <string name="map_filter_connector_tesla">Tesla</string>
+    <string name="map_filter_connector_domestic">Οικιακή πρίζα</string>
+    <string name="map_filter_connector_wireless">Ασύρματο</string>
+    <string name="map_filter_connector_unknown">Άλλο</string>
+    <string name="map_filter_min_power">≥ 50 kW</string>
+    <string name="map_qr_scan_action">Σάρωση QR</string>
+    <string name="map_error_loading">Δεν ήταν δυνατή η φόρτωση των φορτιστών: %1$s</string>
+    <string name="map_dismiss_action">Απόρριψη</string>
+    <string name="map_my_location_label">Εγώ</string>
+    <string name="map_toggle_list_action">Προβολή λίστας</string>
+</resources>

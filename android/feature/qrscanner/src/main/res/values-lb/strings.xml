@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Luedstatioun scannen</string>
+    <string name="qrscanner_permission_rationale">Mir brauche d\'Kamera fir de QR-Code vun der Luedstatioun ze liesen. Et gëtt kee Bild gespäichert.</string>
+    <string name="qrscanner_permission_action">Kamera erlaben</string>
+</resources>

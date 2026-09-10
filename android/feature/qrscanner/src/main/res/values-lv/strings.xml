@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Skenēt uzlādes punktu</string>
+    <string name="qrscanner_permission_rationale">Mums nepieciešama kamera, lai nolasītu uzlādes stacijas QR kodu. Attēls netiek saglabāts.</string>
+    <string name="qrscanner_permission_action">Atļaut kameru</string>
+</resources>

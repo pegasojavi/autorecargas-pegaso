@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="map_title">AutoRecargas Pegaso</string>
+    <string name="map_search_placeholder">Bilatu helbidea edo herria</string>
+    <string name="map_locate_me_action">Zentratu nire kokapenean</string>
+    <string name="map_search_this_area">Bilatu eremu honetan</string>
+    <string name="map_filter_connector_type1">1 mota</string>
+    <string name="map_filter_connector_type2">2 mota</string>
+    <string name="map_filter_connector_type3">3 mota</string>
+    <string name="map_filter_connector_ccs1">CCS1</string>
+    <string name="map_filter_connector_ccs2">CCS2</string>
+    <string name="map_filter_connector_chademo">CHAdeMO</string>
+    <string name="map_filter_connector_tesla">Tesla</string>
+    <string name="map_filter_connector_domestic">Etxeko entxufea</string>
+    <string name="map_filter_connector_wireless">Haririk gabekoa</string>
+    <string name="map_filter_connector_unknown">Beste bat</string>
+    <string name="map_filter_min_power">≥ 50 kW</string>
+    <string name="map_qr_scan_action">Eskaneatu QR kodea</string>
+    <string name="map_error_loading">Ezin izan dira kargagailuak kargatu: %1$s</string>
+    <string name="map_dismiss_action">Itxi</string>
+    <string name="map_my_location_label">Ni</string>
+    <string name="map_toggle_list_action">Zerrenda ikuspegia</string>
+</resources>

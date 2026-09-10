@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AutoRecargas Pegaso</string>
+    <string name="qr_not_recognized">Níor aithníomar an cód QR seo</string>
+    <string name="provider_app_unknown">Níl aithne againn ar aip an oibreora seo fós</string>
+    <string name="provider_disambiguation_title">Roghnaigh aip le hoscailt</string>
+    <string name="provider_disambiguation_cancel">Cealaigh</string>
+</resources>

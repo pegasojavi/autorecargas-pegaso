@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Сканирай точка за зареждане</string>
+    <string name="qrscanner_permission_rationale">Нуждаем се от камерата, за да прочетем QR кода на зарядната станция. Никога не се запазва изображение.</string>
+    <string name="qrscanner_permission_action">Разреши камера</string>
+</resources>

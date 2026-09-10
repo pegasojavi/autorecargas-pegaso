@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Skeniraj punionicu</string>
+    <string name="qrscanner_permission_rationale">Trebamo kameru za čitanje QR koda punjača. Slika se nikada ne sprema.</string>
+    <string name="qrscanner_permission_action">Dopusti kameru</string>
+</resources>

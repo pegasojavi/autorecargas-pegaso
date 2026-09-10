@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Digitalizar ponto de carregamento</string>
+    <string name="qrscanner_permission_rationale">Precisamos da câmara para ler o código QR do carregador. Nenhuma imagem é guardada.</string>
+    <string name="qrscanner_permission_action">Permitir câmara</string>
+</resources>

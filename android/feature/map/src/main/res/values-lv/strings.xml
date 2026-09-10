@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="map_title">AutoRecargas Pegaso</string>
+    <string name="map_search_placeholder">Meklēt adresi vai pilsētu</string>
+    <string name="map_locate_me_action">Centrēt uz manu atrašanās vietu</string>
+    <string name="map_search_this_area">Meklēt šajā apgabalā</string>
+    <string name="map_filter_connector_type1">1. tips</string>
+    <string name="map_filter_connector_type2">2. tips</string>
+    <string name="map_filter_connector_type3">3. tips</string>
+    <string name="map_filter_connector_ccs1">CCS1</string>
+    <string name="map_filter_connector_ccs2">CCS2</string>
+    <string name="map_filter_connector_chademo">CHAdeMO</string>
+    <string name="map_filter_connector_tesla">Tesla</string>
+    <string name="map_filter_connector_domestic">Sadzīves kontaktligzda</string>
+    <string name="map_filter_connector_wireless">Bezvadu</string>
+    <string name="map_filter_connector_unknown">Cits</string>
+    <string name="map_filter_min_power">≥ 50 kW</string>
+    <string name="map_qr_scan_action">Skenēt QR</string>
+    <string name="map_error_loading">Neizdevās ielādēt uzlādes stacijas: %1$s</string>
+    <string name="map_dismiss_action">Aizvērt</string>
+    <string name="map_my_location_label">Es</string>
+    <string name="map_toggle_list_action">Saraksta skats</string>
+</resources>

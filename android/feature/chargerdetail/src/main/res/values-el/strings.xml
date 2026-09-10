@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chargerdetail_open_app_action">Άνοιγμα εφαρμογής</string>
+    <string name="chargerdetail_get_directions_action">Οδηγίες</string>
+    <string name="chargerdetail_connector_type1">Τύπος 1</string>
+    <string name="chargerdetail_connector_type2">Τύπος 2</string>
+    <string name="chargerdetail_connector_type3">Τύπος 3</string>
+    <string name="chargerdetail_connector_ccs1">CCS1</string>
+    <string name="chargerdetail_connector_ccs2">CCS2</string>
+    <string name="chargerdetail_connector_chademo">CHAdeMO</string>
+    <string name="chargerdetail_connector_tesla">Tesla</string>
+    <string name="chargerdetail_connector_domestic">Οικιακή πρίζα</string>
+    <string name="chargerdetail_connector_wireless">Ασύρματο</string>
+    <string name="chargerdetail_connector_unknown">Υποδοχή</string>
+</resources>

@@ -1,11 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Rayo bronce (acento de marca "Pegaso", tema "Eco") sobre fondo transparente. -->
+<!--
+  Rayo bronce en 3D con brillo (acento de marca "Pegaso", tema "Eco"), a petición del
+  usuario ("el icono de la app debe ser en 3d el rayo con brillos"), sobre fondo
+  transparente (lo pinta ic_launcher_background). VectorDrawable no tiene sombras/blur
+  reales, así que el volumen 3D se simula con la técnica clásica de icono "glossy":
+    1) una sombra: el mismo trazado del rayo, desplazado unos px y oscurecido, para dar
+       sensación de profundidad respecto al fondo;
+    2) el cuerpo del rayo con un degradado diagonal (dorado claro arriba-izquierda a
+       bronce oscuro abajo-derecha, como si la luz viniera de arriba-izquierda) en vez
+       de un color plano — esto es lo que da el volumen;
+    3) el MISMO trazado del rayo otra vez, con un degradado vertical blanco→transparente
+       que solo cubre el tercio superior — al reutilizar el trazado exacto, el brillo
+       queda recortado automáticamente a la silueta real del rayo (nunca se sale de
+       forma), simulando el reflejo especular de una superficie pulida/brillante.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- 1) Sombra, desplazada respecto al cuerpo para dar profundidad -->
     <path
-        android:fillColor="#C9A227"
-        android:pathData="M38,22 L38,57.2 L47.6,57.2 L47.6,86 L70,47.6 L57.2,47.6 L70,22 Z" />
+        android:fillColor="#4A2E06"
+        android:fillAlpha="0.45"
+        android:pathData="M40,25 L40,60.2 L49.6,60.2 L49.6,89 L72,50.6 L59.2,50.6 L72,25 Z" />
+    <!-- 2) Cuerpo del rayo con degradado diagonal (volumen 3D) -->
+    <path android:pathData="M38,22 L38,57.2 L47.6,57.2 L47.6,86 L70,47.6 L57.2,47.6 L70,22 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="34"
+                android:startY="18"
+                android:endX="74"
+                android:endY="90"
+                android:startColor="#FCE9A8"
+                android:centerColor="#C9A227"
+                android:endColor="#6E4E10" />
+        </aapt:attr>
+    </path>
+    <!-- 3) Brillo especular: mismo trazado, degradado vertical recortado a la silueta -->
+    <path android:pathData="M38,22 L38,57.2 L47.6,57.2 L47.6,86 L70,47.6 L57.2,47.6 L70,22 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="54"
+                android:startY="20"
+                android:endX="54"
+                android:endY="60"
+                android:startColor="#CCFFFFFF"
+                android:endColor="#00FFFFFF" />
+        </aapt:attr>
+    </path>
 </vector>

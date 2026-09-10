@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AutoRecargas Pegaso</string>
+    <string name="qr_not_recognized">Non abbiamo riconosciuto questo codice QR</string>
+    <string name="provider_app_unknown">Non conosciamo ancora l\'app di questo operatore</string>
+    <string name="provider_disambiguation_title">Scegli un\'app da aprire</string>
+    <string name="provider_disambiguation_cancel">Annulla</string>
+</resources>

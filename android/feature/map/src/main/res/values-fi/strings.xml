@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="map_title">AutoRecargas Pegaso</string>
+    <string name="map_search_placeholder">Hae osoitetta tai kaupunkia</string>
+    <string name="map_locate_me_action">Keskitä omaan sijaintiini</string>
+    <string name="map_search_this_area">Hae tältä alueelta</string>
+    <string name="map_filter_connector_type1">Tyyppi 1</string>
+    <string name="map_filter_connector_type2">Tyyppi 2</string>
+    <string name="map_filter_connector_type3">Tyyppi 3</string>
+    <string name="map_filter_connector_ccs1">CCS1</string>
+    <string name="map_filter_connector_ccs2">CCS2</string>
+    <string name="map_filter_connector_chademo">CHAdeMO</string>
+    <string name="map_filter_connector_tesla">Tesla</string>
+    <string name="map_filter_connector_domestic">Kotitalouspistoke</string>
+    <string name="map_filter_connector_wireless">Langaton</string>
+    <string name="map_filter_connector_unknown">Muu</string>
+    <string name="map_filter_min_power">≥ 50 kW</string>
+    <string name="map_qr_scan_action">Skannaa QR</string>
+    <string name="map_error_loading">Latausasemien lataus epäonnistui: %1$s</string>
+    <string name="map_dismiss_action">Sulje</string>
+    <string name="map_my_location_label">Minä</string>
+    <string name="map_toggle_list_action">Luettelonäkymä</string>
+</resources>

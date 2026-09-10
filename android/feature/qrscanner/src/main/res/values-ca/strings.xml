@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Escaneja el punt de càrrega</string>
+    <string name="qrscanner_permission_rationale">Necessitem la càmera per llegir el codi QR del carregador. No es desa cap imatge.</string>
+    <string name="qrscanner_permission_action">Permet la càmera</string>
+</resources>

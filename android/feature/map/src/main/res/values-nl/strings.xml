@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="map_title">AutoRecargas Pegaso</string>
+    <string name="map_search_placeholder">Adres of plaats zoeken</string>
+    <string name="map_locate_me_action">Centreren op mijn locatie</string>
+    <string name="map_search_this_area">Dit gebied doorzoeken</string>
+    <string name="map_filter_connector_type1">Type 1</string>
+    <string name="map_filter_connector_type2">Type 2</string>
+    <string name="map_filter_connector_type3">Type 3</string>
+    <string name="map_filter_connector_ccs1">CCS1</string>
+    <string name="map_filter_connector_ccs2">CCS2</string>
+    <string name="map_filter_connector_chademo">CHAdeMO</string>
+    <string name="map_filter_connector_tesla">Tesla</string>
+    <string name="map_filter_connector_domestic">Huishoudelijk stopcontact</string>
+    <string name="map_filter_connector_wireless">Draadloos</string>
+    <string name="map_filter_connector_unknown">Overig</string>
+    <string name="map_filter_min_power">≥ 50 kW</string>
+    <string name="map_qr_scan_action">QR scannen</string>
+    <string name="map_error_loading">Laadpalen konden niet worden geladen: %1$s</string>
+    <string name="map_dismiss_action">Sluiten</string>
+    <string name="map_my_location_label">Ik</string>
+    <string name="map_toggle_list_action">Lijstweergave</string>
+</resources>

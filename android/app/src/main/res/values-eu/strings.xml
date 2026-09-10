@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AutoRecargas Pegaso</string>
+    <string name="qr_not_recognized">Ez dugu QR kode hau ezagutu</string>
+    <string name="provider_app_unknown">Oraindik ez dugu operadore honen aplikazioa ezagutzen</string>
+    <string name="provider_disambiguation_title">Aukeratu ireki nahi duzun aplikazioa</string>
+    <string name="provider_disambiguation_cancel">Utzi</string>
+</resources>

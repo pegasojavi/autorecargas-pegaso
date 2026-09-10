@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Skannaa latauspiste</string>
+    <string name="qrscanner_permission_rationale">Tarvitsemme kameraa lukeaksemme laturin QR-koodin. Kuvaa ei koskaan tallenneta.</string>
+    <string name="qrscanner_permission_action">Salli kamera</string>
+</resources>

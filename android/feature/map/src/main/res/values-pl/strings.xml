@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="map_title">AutoRecargas Pegaso</string>
+    <string name="map_search_placeholder">Szukaj adresu lub miasta</string>
+    <string name="map_locate_me_action">Wyśrodkuj na mojej lokalizacji</string>
+    <string name="map_search_this_area">Szukaj w tym obszarze</string>
+    <string name="map_filter_connector_type1">Typ 1</string>
+    <string name="map_filter_connector_type2">Typ 2</string>
+    <string name="map_filter_connector_type3">Typ 3</string>
+    <string name="map_filter_connector_ccs1">CCS1</string>
+    <string name="map_filter_connector_ccs2">CCS2</string>
+    <string name="map_filter_connector_chademo">CHAdeMO</string>
+    <string name="map_filter_connector_tesla">Tesla</string>
+    <string name="map_filter_connector_domestic">Gniazdko domowe</string>
+    <string name="map_filter_connector_wireless">Bezprzewodowe</string>
+    <string name="map_filter_connector_unknown">Inne</string>
+    <string name="map_filter_min_power">≥ 50 kW</string>
+    <string name="map_qr_scan_action">Skanuj QR</string>
+    <string name="map_error_loading">Nie udało się załadować ładowarek: %1$s</string>
+    <string name="map_dismiss_action">Zamknij</string>
+    <string name="map_my_location_label">Ja</string>
+    <string name="map_toggle_list_action">Widok listy</string>
+</resources>

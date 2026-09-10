@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Laadpunt scannen</string>
+    <string name="qrscanner_permission_rationale">We hebben de camera nodig om de QR-code van de laadpaal te lezen. Er wordt nooit een afbeelding opgeslagen.</string>
+    <string name="qrscanner_permission_action">Camera toestaan</string>
+</resources>

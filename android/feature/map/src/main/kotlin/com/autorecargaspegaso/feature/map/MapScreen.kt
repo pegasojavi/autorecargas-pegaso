@@ -9,6 +9,7 @@ import android.location.LocationManager
 import android.os.Looper
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,18 +17,16 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.ElectricCar
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Outlet
-import androidx.compose.material.icons.filled.Power
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -40,6 +39,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -56,7 +56,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -122,12 +128,13 @@ fun MapScreen(
 
     // Recarga automática al mover el mapa (pan/zoom) — con un pequeño
     // debounce para no disparar una petición por cada fotograma del gesto,
-    // solo cuando el usuario deja de mover el mapa.
-    var pendingAreaQuery by remember { mutableStateOf<Triple<Double, Double, Double>?>(null) }
+    // solo cuando el usuario deja de mover el mapa. Rectángulo visible real
+    // (no un círculo aproximado — ver MapViewModel.refreshVisibleArea).
+    var pendingAreaQuery by remember { mutableStateOf<MapBounds?>(null) }
     LaunchedEffect(pendingAreaQuery) {
         val query = pendingAreaQuery ?: return@LaunchedEffect
         kotlinx.coroutines.delay(700)
-        viewModel.refreshArea(query.first, query.second, query.third)
+        viewModel.refreshVisibleArea(query.north, query.south, query.east, query.west)
     }
 
     LaunchedEffect(Unit) {
@@ -221,9 +228,7 @@ fun MapScreen(
                                 myLocation = myLocation,
                                 searchedPlace = searchedPlace,
                                 onChargerClick = viewModel::selectCharger,
-                                onMapMoved = { latitude, longitude, distanceKm ->
-                                    pendingAreaQuery = Triple(latitude, longitude, distanceKm)
-                                },
+                                onMapMoved = { bounds -> pendingAreaQuery = bounds },
                                 // .weight(1f) en el Box contenedor, no fillMaxSize() aquí:
                                 // dentro de una Column sin peso, la vista nativa del mapa
                                 // reclamaba toda la altura disponible y se dibujaba encima
@@ -303,16 +308,17 @@ private fun FilterRow(
     ) {
         items(FILTERABLE_CONNECTOR_TYPES) { type ->
             FilterChip(
-                selected = type in filters.connectorTypes,
+                // Activado (en color) = tipo visible; pulsar lo excluye. Ver ChargerFilters.excludedConnectorTypes.
+                selected = type !in filters.excludedConnectorTypes,
                 onClick = { onToggleConnector(type) },
                 label = { Text(connectorTypeLabel(type)) },
                 leadingIcon = {
-                    // Decorativo (contentDescription = null): el texto completo y
-                    // localizado sigue visible en `label`, que ya es lo que
-                    // TalkBack anuncia — el icono solo agiliza el escaneo visual
-                    // del chip (petición del usuario), no sustituye el texto
-                    // accesible (CLAUDE.md sección 9).
-                    Icon(connectorTypeIcon(type), contentDescription = null)
+                    // Decorativo (sin contentDescription/semántica propia): el
+                    // texto completo y localizado sigue visible en `label`, que
+                    // ya es lo que TalkBack anuncia — el icono solo agiliza el
+                    // escaneo visual del chip (petición del usuario), no
+                    // sustituye el texto accesible (CLAUDE.md sección 9).
+                    ConnectorLeadingIcon(type)
                 },
             )
         }
@@ -341,34 +347,161 @@ private fun connectorTypeLabel(type: ConnectorType): String = when (type) {
 }
 
 /**
- * Icono representativo por tipo de conector, para agilizar el escaneo visual
- * del filtro (petición del usuario). Ninguno es un logo de marca (evita
- * problemas de trademark, en particular para TESLA) — todos son iconos
- * genéricos del catálogo de Material Icons Extended, verificados contra la
- * versión real de la librería usada en el proyecto (`material-icons-extended`
- * 1.7.8): Power, Bolt, ElectricCar, Outlet y Wifi existen los cuatro como
- * `Icons.Filled.*`.
- *
- * Se evaluó (y se descartó) sustituir estos iconos genéricos por glifos
- * dibujados a mano con la disposición de pines real de cada estándar — entre
- * otras cosas para no reutilizar la tabla comparativa de
- * https://emobilityadvisor.com/por-que-no-hay-un-estandar-entre-los-cargadores-electricos,
- * que cita esa imagen como "Fuente: computerhoy.com" sin licencia de uso. La
- * alternativa quedó revertida a petición del usuario tras verla en una
- * previsualización — esta es la versión vigente, ya con build verde.
+ * Icono genérico de catálogo (Material Icons Extended 1.7.8) para los tipos
+ * que no tienen una silueta física de "conector" que dibujar: enchufe
+ * doméstico (toma de pared) e inalámbrico (no hay conector físico). Ver
+ * [ConnectorGlyph] para TYPE_1/2/3, CCS1/CCS2, CHAdeMO y TESLA, que sí se
+ * dibujan a mano con la disposición de pines real de cada estándar.
  */
 private fun connectorTypeIcon(type: ConnectorType): ImageVector = when (type) {
-    // AC lento (Tipo 1/2/3): icono genérico de "enchufe/corriente".
-    ConnectorType.TYPE_1, ConnectorType.TYPE_2, ConnectorType.TYPE_3 -> Icons.Filled.Power
-    // DC rápido (CCS1/CCS2/CHAdeMO): rayo, para diferenciarlo visualmente del AC lento.
-    ConnectorType.CCS1, ConnectorType.CCS2, ConnectorType.CHADEMO -> Icons.Filled.Bolt
-    // Tesla: coche eléctrico genérico, nunca el logo de la marca.
-    ConnectorType.TESLA -> Icons.Filled.ElectricCar
-    // Enchufe doméstico: icono de toma de corriente de pared.
     ConnectorType.DOMESTIC -> Icons.Filled.Outlet
-    // Inalámbrico: sin icono oficial de carga inductiva en el catálogo, "sin cable" por convención.
     ConnectorType.WIRELESS -> Icons.Filled.Wifi
-    ConnectorType.UNKNOWN -> Icons.Filled.Power
+    else -> Icons.Filled.Outlet // TYPE_1/2/3, CCS1/2, CHAdeMO, TESLA y UNKNOWN nunca llegan aquí, ver ConnectorLeadingIcon
+}
+
+/**
+ * Icono del chip de filtro: para los conectores con forma física real
+ * (TYPE_1/2/3, CCS1/2, CHAdeMO, TESLA) dibuja un glifo esquemático propio
+ * ([ConnectorGlyph]) con la disposición de pines real de cada estándar;
+ * para el resto (doméstico/inalámbrico), un icono genérico de catálogo.
+ *
+ * La disposición de pines se verificó contra una lámina de referencia que
+ * el usuario aportó (`esquemas cargadores.jpeg`, "Global EV Charging
+ * Standards" — ella misma marcada "© EV Charging Schematics 2024"). Esa
+ * lámina NO se ha incrustado ni calcado en la app — solo se usó como
+ * referencia técnica para redibujar cada silueta con trazos propios; la
+ * disposición de pines de un estándar (IEC 62196/SAE J1772/CHAdeMO/NACS) es
+ * un hecho técnico público, no la expresión artística de esa lámina
+ * concreta. TESLA usa ahora la silueta real del conector NACS (una cápsula
+ * compacta con 5 pines en línea, bien distinta de los conectores circulares
+ * del resto) en vez de un icono de coche genérico — sigue sin usarse ningún
+ * logo de la marca, solo la forma física y funcional del propio conector.
+ */
+@Composable
+private fun ConnectorLeadingIcon(type: ConnectorType) {
+    when (type) {
+        ConnectorType.TYPE_1, ConnectorType.TYPE_2, ConnectorType.TYPE_3,
+        ConnectorType.CCS1, ConnectorType.CCS2, ConnectorType.CHADEMO,
+        ConnectorType.TESLA,
+        -> ConnectorGlyph(type)
+        else -> Icon(connectorTypeIcon(type), contentDescription = null)
+    }
+}
+
+@Composable
+private fun ConnectorGlyph(type: ConnectorType, modifier: Modifier = Modifier) {
+    val color = LocalContentColor.current
+    Canvas(modifier = modifier.size(18.dp)) {
+        when (type) {
+            // Type 1 (SAE J1772/Yazaki) y Type 3 (Scame): conectores AC
+            // "ovalados" de la misma familia, con 5 pines asimétricos.
+            ConnectorType.TYPE_1, ConnectorType.TYPE_3 -> drawType1Glyph(color)
+            // Type 2 (Mennekes), estándar AC en Europa: cuerpo circular, 7 pines.
+            ConnectorType.TYPE_2 -> drawType2Glyph(color)
+            // CCS1/CCS2 (Combo): silueta "orejas de ratón" — nub AC arriba +
+            // dos pines DC grandes abajo.
+            ConnectorType.CCS1, ConnectorType.CCS2 -> drawCcsGlyph(color)
+            // CHAdeMO: cuerpo circular más grande, pestaña de orientación y
+            // 2 pines DC grandes + señal.
+            ConnectorType.CHADEMO -> drawChademoGlyph(color)
+            // Tesla/NACS: cápsula compacta con 5 pines en línea — silueta
+            // real del conector, sin logo de marca.
+            ConnectorType.TESLA -> drawTeslaGlyph(color)
+            else -> Unit // no se alcanza: ConnectorLeadingIcon solo llama aquí para estos tipos
+        }
+    }
+}
+
+/** Conector AC ovalado con 5 pines (familia Type 1/SAE J1772 y Type 3/Scame). */
+private fun DrawScope.drawType1Glyph(color: Color) {
+    val stroke = size.minDimension * 0.09f
+    drawOval(
+        color = color,
+        topLeft = Offset(size.width * 0.05f, size.height * 0.12f),
+        size = Size(size.width * 0.9f, size.height * 0.76f),
+        style = Stroke(width = stroke),
+    )
+    val pinRadius = size.minDimension * 0.075f
+    listOf(
+        Offset(size.width * 0.33f, size.height * 0.34f),
+        Offset(size.width * 0.67f, size.height * 0.34f),
+        Offset(size.width * 0.5f, size.height * 0.5f),
+        Offset(size.width * 0.36f, size.height * 0.68f),
+        Offset(size.width * 0.64f, size.height * 0.68f),
+    ).forEach { drawCircle(color = color, radius = pinRadius, center = it) }
+}
+
+/** Conector AC circular con 7 pines (Type 2/Mennekes, estándar en Europa). */
+private fun DrawScope.drawType2Glyph(color: Color) {
+    val stroke = size.minDimension * 0.09f
+    val center = Offset(size.width * 0.5f, size.height * 0.5f)
+    drawCircle(color = color, radius = size.minDimension * 0.46f, center = center, style = Stroke(width = stroke))
+    val pinRadius = size.minDimension * 0.065f
+    val ringRadius = size.minDimension * 0.28f
+    for (i in 0 until 6) {
+        val angle = Math.toRadians((i * 60).toDouble())
+        val x = center.x + ringRadius * kotlin.math.cos(angle).toFloat()
+        val y = center.y + ringRadius * kotlin.math.sin(angle).toFloat()
+        drawCircle(color = color, radius = pinRadius, center = Offset(x, y))
+    }
+    drawCircle(color = color, radius = pinRadius, center = center)
+}
+
+/** Combo CCS1/CCS2: nub AC arriba (contorno) + dos pines DC grandes abajo (rellenos). */
+private fun DrawScope.drawCcsGlyph(color: Color) {
+    drawRoundRect(
+        color = color,
+        topLeft = Offset(size.width * 0.3f, size.height * 0.06f),
+        size = Size(size.width * 0.4f, size.height * 0.34f),
+        cornerRadius = CornerRadius(size.width * 0.12f),
+        style = Stroke(width = size.minDimension * 0.09f),
+    )
+    val dcRadius = size.minDimension * 0.22f
+    drawCircle(color = color, radius = dcRadius, center = Offset(size.width * 0.3f, size.height * 0.7f))
+    drawCircle(color = color, radius = dcRadius, center = Offset(size.width * 0.7f, size.height * 0.7f))
+}
+
+/** CHAdeMO: cuerpo circular grande, pestaña de orientación arriba, 2 pines DC + 2 de señal. */
+private fun DrawScope.drawChademoGlyph(color: Color) {
+    val stroke = size.minDimension * 0.09f
+    drawCircle(
+        color = color,
+        radius = size.minDimension * 0.46f,
+        center = Offset(size.width * 0.5f, size.height * 0.54f),
+        style = Stroke(width = stroke),
+    )
+    drawRoundRect(
+        color = color,
+        topLeft = Offset(size.width * 0.42f, 0f),
+        size = Size(size.width * 0.16f, size.height * 0.12f),
+        cornerRadius = CornerRadius(size.width * 0.03f),
+    )
+    val bigRadius = size.minDimension * 0.14f
+    drawCircle(color = color, radius = bigRadius, center = Offset(size.width * 0.36f, size.height * 0.6f))
+    drawCircle(color = color, radius = bigRadius, center = Offset(size.width * 0.64f, size.height * 0.6f))
+    val smallRadius = size.minDimension * 0.06f
+    drawCircle(color = color, radius = smallRadius, center = Offset(size.width * 0.5f, size.height * 0.38f))
+}
+
+/**
+ * Tesla/NACS: cápsula compacta (rounded rect ancho) con 5 pines en línea —
+ * la silueta real del conector NACS es mucho más pequeña y "achatada" que
+ * los conectores circulares CCS/CHAdeMO, así que esa cápsula por sí sola ya
+ * lo distingue de un vistazo, sin necesitar ningún logo.
+ */
+private fun DrawScope.drawTeslaGlyph(color: Color) {
+    drawRoundRect(
+        color = color,
+        topLeft = Offset(size.width * 0.08f, size.height * 0.28f),
+        size = Size(size.width * 0.84f, size.height * 0.44f),
+        cornerRadius = CornerRadius(size.height * 0.22f),
+        style = Stroke(width = size.minDimension * 0.09f),
+    )
+    val pinRadius = size.minDimension * 0.06f
+    val y = size.height * 0.5f
+    listOf(0.22f, 0.38f, 0.5f, 0.62f, 0.78f).forEach { fractionX ->
+        drawCircle(color = color, radius = pinRadius, center = Offset(size.width * fractionX, y))
+    }
 }
 
 /** Lista de cargadores ordenada por distancia al centro actual del mapa (a petición del usuario). */
@@ -446,7 +579,7 @@ private fun OsmMapView(
     myLocation: Pair<Double, Double>?,
     searchedPlace: SearchFocus?,
     onChargerClick: (Charger) -> Unit,
-    onMapMoved: (Double, Double, Double) -> Unit,
+    onMapMoved: (MapBounds) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -571,18 +704,28 @@ private fun OsmMapView(
     )
 }
 
-private fun reportMapMoved(mapView: MapView, onMapMoved: (Double, Double, Double) -> Unit) {
-    val center = mapView.mapCenter
-    // Tope subido de 100 a 500 km (bug real detectado en dispositivo): con
-    // 100 km, hacer zoom out a una zona amplia (varias regiones, un país)
-    // dejaba la query fija en ese círculo, mostrando solo cargadores de una
-    // sub-zona pequeña en vez de todo el área visible en pantalla. Ver
-    // también ChargerRepository.maxResultsFor, que hay que subir en
-    // proporción para no truncar los resultados en zonas grandes y densas.
-    val distanceKm = runCatching {
-        (mapView.boundingBox.diagonalLengthInMeters / 2.0 / 1000.0).coerceIn(1.0, 500.0)
-    }.getOrDefault(25.0)
-    onMapMoved(center.latitude, center.longitude, distanceKm)
+/** Rectángulo visible del mapa, en grados — ver [MapViewModel.refreshVisibleArea]. */
+data class MapBounds(val north: Double, val south: Double, val east: Double, val west: Double)
+
+/**
+ * Reporta el rectángulo visible real del mapa, no un círculo aproximado.
+ *
+ * Antes se aproximaba el área visible con un círculo (radio = mitad de la
+ * diagonal del rectángulo), con un tope que subió de 100 a 500 km en una
+ * ronda anterior — pero ese tope era la causa real del bug ("veo un círculo
+ * de cargadores, no todo lo que hay en pantalla"): en cuanto el usuario
+ * hacía zoom out más allá del tope vigente, la consulta se quedaba fija en
+ * un círculo más pequeño que la pantalla, y las esquinas del rectángulo
+ * visible (fuera del círculo) se veían vacías aunque hubiera cargadores
+ * reales ahí. Subir el tope otra vez solo movería el punto en el que
+ * reaparece, no lo arregla. La causa raíz era el círculo en sí, no el
+ * tamaño del tope — OCM soporta consultar directamente por rectángulo
+ * (`boundingbox`, ver `OpenChargeMapApi`), que por construcción nunca puede
+ * producir ese artefacto, a ningún nivel de zoom.
+ */
+private fun reportMapMoved(mapView: MapView, onMapMoved: (MapBounds) -> Unit) {
+    val box = mapView.boundingBox
+    onMapMoved(MapBounds(north = box.latNorth, south = box.latSouth, east = box.lonEast, west = box.lonWest))
 }
 
 /** Pin circular relleno de [fillColor] con borde blanco, para distinguir "Yo" de los cargadores (pin rojo por defecto de osmdroid) sin necesitar un recurso drawable aparte. */

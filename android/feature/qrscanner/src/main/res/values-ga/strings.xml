@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Scanáil pointe luchtaithe</string>
+    <string name="qrscanner_permission_rationale">Tá an ceamara ag teastáil uainn chun cód QR an luchtaire a léamh. Ní shábháiltear aon íomhá riamh.</string>
+    <string name="qrscanner_permission_action">Ceadaigh an ceamara</string>
+</resources>

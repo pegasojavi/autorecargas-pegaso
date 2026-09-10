@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Skanni laadimispunkt</string>
+    <string name="qrscanner_permission_rationale">Vajame kaamerat laadija QR-koodi lugemiseks. Pilti ei salvestata kunagi.</string>
+    <string name="qrscanner_permission_action">Luba kaamera</string>
+</resources>

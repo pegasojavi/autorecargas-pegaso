@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chargerdetail_open_app_action">Ireki aplikazioa</string>
+    <string name="chargerdetail_get_directions_action">Norabideak</string>
+    <string name="chargerdetail_connector_type1">1 mota</string>
+    <string name="chargerdetail_connector_type2">2 mota</string>
+    <string name="chargerdetail_connector_type3">3 mota</string>
+    <string name="chargerdetail_connector_ccs1">CCS1</string>
+    <string name="chargerdetail_connector_ccs2">CCS2</string>
+    <string name="chargerdetail_connector_chademo">CHAdeMO</string>
+    <string name="chargerdetail_connector_tesla">Tesla</string>
+    <string name="chargerdetail_connector_domestic">Etxeko entxufea</string>
+    <string name="chargerdetail_connector_wireless">Haririk gabekoa</string>
+    <string name="chargerdetail_connector_unknown">Konektorea</string>
+</resources>

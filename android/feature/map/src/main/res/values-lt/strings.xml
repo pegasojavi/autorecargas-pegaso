@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="map_title">AutoRecargas Pegaso</string>
+    <string name="map_search_placeholder">Ieškoti adreso ar miesto</string>
+    <string name="map_locate_me_action">Centruoti pagal mano vietą</string>
+    <string name="map_search_this_area">Ieškoti šioje srityje</string>
+    <string name="map_filter_connector_type1">1 tipas</string>
+    <string name="map_filter_connector_type2">2 tipas</string>
+    <string name="map_filter_connector_type3">3 tipas</string>
+    <string name="map_filter_connector_ccs1">CCS1</string>
+    <string name="map_filter_connector_ccs2">CCS2</string>
+    <string name="map_filter_connector_chademo">CHAdeMO</string>
+    <string name="map_filter_connector_tesla">Tesla</string>
+    <string name="map_filter_connector_domestic">Buitinis lizdas</string>
+    <string name="map_filter_connector_wireless">Belaidis</string>
+    <string name="map_filter_connector_unknown">Kita</string>
+    <string name="map_filter_min_power">≥ 50 kW</string>
+    <string name="map_qr_scan_action">Skenuoti QR</string>
+    <string name="map_error_loading">Nepavyko įkelti įkrovimo stotelių: %1$s</string>
+    <string name="map_dismiss_action">Uždaryti</string>
+    <string name="map_my_location_label">Aš</string>
+    <string name="map_toggle_list_action">Sąrašo rodinys</string>
+</resources>

@@ -31,6 +31,30 @@ interface OpenChargeMapApi {
         @Query("key") apiKey: String,
     ): List<OcmPoiDto>
 
+    /**
+     * Búsqueda por rectángulo visible del mapa, en vez de por radio circular
+     * (bug real detectado en dispositivo: al hacer zoom out, `nearbyChargers`
+     * consultaba un círculo mientras la pantalla mostraba un rectángulo, así
+     * que los cargadores de las esquinas —dentro del rectángulo visible pero
+     * fuera del círculo— nunca se cargaban, y se veía un corte circular neto
+     * en pantalla en vez de "todos los cargadores que haya" en el área
+     * visible). OCM soporta esto de forma nativa desde v3 vía `boundingbox`
+     * (confirmado contra `ocm-openapi-spec.yaml` del repo oficial
+     * `openchargemap/ocm-docs`): formato `(lat,lng),(lat2,lng2)` con la
+     * esquina superior-izquierda primero y la inferior-derecha después;
+     * `latitude`/`longitude`/`distance` quedan sin uso cuando se da
+     * `boundingbox`, así que ni se declaran en esta función.
+     */
+    @GET("v3/poi")
+    suspend fun chargersInBoundingBox(
+        @Query("boundingbox") boundingBox: String,
+        @Query("maxresults") maxResults: Int = 100,
+        @Query("opendata") openDataOnly: Boolean = true,
+        @Query("compact") compact: Boolean = false,
+        @Query("verbose") verbose: Boolean = false,
+        @Query("key") apiKey: String,
+    ): List<OcmPoiDto>
+
     companion object {
         const val BASE_URL = "https://api.openchargemap.io/"
     }

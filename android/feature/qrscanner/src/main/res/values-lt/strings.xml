@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Skenuoti įkrovimo tašką</string>
+    <string name="qrscanner_permission_rationale">Mums reikia kameros, kad nuskaitytume įkroviklio QR kodą. Vaizdas niekada neišsaugomas.</string>
+    <string name="qrscanner_permission_action">Leisti naudoti kamerą</string>
+</resources>

@@ -14,13 +14,27 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/** Filtros del mapa (CLAUDE.md sección 2, fase 2 adelantada a petición del usuario). */
+/**
+ * Filtros del mapa (CLAUDE.md sección 2, fase 2 adelantada a petición del
+ * usuario).
+ *
+ * [excludedConnectorTypes] es un modelo de EXCLUSIÓN, no de inclusión (bug
+ * real reportado: "están al revés, si el icono se ve en color está
+ * activado... por defecto todos activados"). Antes era al revés (un
+ * conjunto de tipos "permitidos", vacío = sin filtrar) y con `FilterChip`
+ * usando `selected = type in connectorTypes`, eso significaba que en el
+ * estado por defecto (todo visible, sin filtrar) NINGÚN chip aparecía
+ * seleccionado/coloreado — justo lo contrario de lo que el usuario espera:
+ * si todos los tipos se están mostrando, todos los chips deberían verse
+ * "activados" (en color) por defecto, y pulsar uno debería apagarlo
+ * (excluirlo), no encenderlo.
+ */
 data class ChargerFilters(
-    val connectorTypes: Set<ConnectorType> = emptySet(), // vacío = sin filtrar por conector
+    val excludedConnectorTypes: Set<ConnectorType> = emptySet(), // vacío = nada excluido, todos los tipos visibles (todos los chips activados por defecto)
     val minPowerKw: Double? = null,
 ) {
     fun matches(charger: Charger): Boolean {
-        val connectorOk = connectorTypes.isEmpty() || charger.connectors.any { it.type in connectorTypes }
+        val connectorOk = excludedConnectorTypes.isEmpty() || charger.connectors.any { it.type !in excludedConnectorTypes }
         val powerOk = minPowerKw == null || charger.connectors.any { (it.powerKw ?: 0.0) >= minPowerKw }
         return connectorOk && powerOk
     }
@@ -146,8 +160,19 @@ class MapViewModel(
     }
 
     private fun applyChargersResult(result: Result<List<Charger>>) {
-        result.onSuccess { chargers -> _uiState.value = MapUiState.Success(chargers) }
-            .onFailure { error ->
+        result.onSuccess { chargers ->
+            // Bug real reportado: cada recarga (GPS, búsqueda, "buscar en
+            // esta zona" al mover/zoom el mapa, o cualquier refresco
+            // disparado por un cambio de tamaño de la ventana) construía un
+            // `MapUiState.Success` nuevo SIN pasar los `filters` actuales,
+            // así que usaba el valor por defecto (`ChargerFilters()`, sin
+            // exclusiones) y el usuario veía sus filtros de conector
+            // "desaparecer" en cada recarga. Los filtros son preferencia de
+            // sesión del usuario, no datos del área consultada — deben
+            // sobrevivir a cualquier recarga, no solo a la primera.
+            val previousFilters = (_uiState.value as? MapUiState.Success)?.filters ?: ChargerFilters()
+            _uiState.value = MapUiState.Success(chargers, filters = previousFilters)
+        }.onFailure { error ->
                 val afterFailure = _uiState.value
                 _uiState.value = if (afterFailure is MapUiState.Success) {
                     afterFailure.copy(isRefreshing = false, searchError = error.message)
@@ -159,12 +184,34 @@ class MapViewModel(
 
     /**
      * Recarga forzada centrada en [latitude]/[longitude] aunque ya se haya
-     * consultado antes — para el botón "Buscar en esta zona" al mover el
-     * mapa (a diferencia de [loadNearby], que ignora repeticiones exactas).
+     * consultado antes — para el resultado de un buscador de dirección/
+     * ciudad (círculo de radio fijo alrededor del lugar encontrado, sección
+     * 2). NO usar esto para "el usuario movió/hizo zoom en el mapa": para
+     * eso está [refreshVisibleArea], que consulta el rectángulo visible en
+     * vez de un círculo.
      */
     fun refreshArea(latitude: Double, longitude: Double, distanceKm: Double) {
         lastQueriedLocation = null
         loadNearby(latitude, longitude, distanceKm)
+    }
+
+    /**
+     * Recarga forzada al rectángulo visible del mapa — para el pan/zoom del
+     * usuario (auto-refresco "buscar en esta zona"). Antes se aproximaba con
+     * un círculo (radio = mitad de la diagonal del rectángulo, con un tope
+     * de 100 km y luego 500 km) y ese tope era precisamente la causa de un
+     * bug real en dispositivo: al hacer zoom out más allá del tope, la
+     * consulta se quedaba fija en un círculo más pequeño que la pantalla,
+     * así que se veía un corte circular neto en vez de todos los cargadores
+     * del área visible. Un rectángulo no puede producir ese artefacto en
+     * ningún nivel de zoom, así que ya no hace falta ningún tope de área.
+     */
+    fun refreshVisibleArea(north: Double, south: Double, east: Double, west: Double) {
+        lastQueriedLocation = null
+        viewModelScope.launch {
+            beginLoadOrRefresh()
+            applyChargersResult(repository.chargersInBoundingBox(north, south, east, west))
+        }
     }
 
     /** Buscador por dirección/ciudad (CLAUDE.md sección 2), vía Nominatim/OSM. */
@@ -203,9 +250,14 @@ class MapViewModel(
         }
     }
 
+    /** Pulsar un chip ya activado (en color) lo excluye; pulsar uno excluido lo vuelve a activar. */
     fun toggleConnectorType(type: ConnectorType) = updateFilters { filters ->
         filters.copy(
-            connectorTypes = if (type in filters.connectorTypes) filters.connectorTypes - type else filters.connectorTypes + type,
+            excludedConnectorTypes = if (type in filters.excludedConnectorTypes) {
+                filters.excludedConnectorTypes - type
+            } else {
+                filters.excludedConnectorTypes + type
+            },
         )
     }
 

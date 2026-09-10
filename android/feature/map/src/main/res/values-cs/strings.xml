@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="map_title">AutoRecargas Pegaso</string>
+    <string name="map_search_placeholder">Hledat adresu nebo město</string>
+    <string name="map_locate_me_action">Vycentrovat na mou polohu</string>
+    <string name="map_search_this_area">Hledat v této oblasti</string>
+    <string name="map_filter_connector_type1">Typ 1</string>
+    <string name="map_filter_connector_type2">Typ 2</string>
+    <string name="map_filter_connector_type3">Typ 3</string>
+    <string name="map_filter_connector_ccs1">CCS1</string>
+    <string name="map_filter_connector_ccs2">CCS2</string>
+    <string name="map_filter_connector_chademo">CHAdeMO</string>
+    <string name="map_filter_connector_tesla">Tesla</string>
+    <string name="map_filter_connector_domestic">Domácí zásuvka</string>
+    <string name="map_filter_connector_wireless">Bezdrátové</string>
+    <string name="map_filter_connector_unknown">Jiné</string>
+    <string name="map_filter_min_power">≥ 50 kW</string>
+    <string name="map_qr_scan_action">Skenovat QR</string>
+    <string name="map_error_loading">Nepodařilo se načíst nabíječky: %1$s</string>
+    <string name="map_dismiss_action">Zavřít</string>
+    <string name="map_my_location_label">Já</string>
+    <string name="map_toggle_list_action">Zobrazení seznamu</string>
+</resources>

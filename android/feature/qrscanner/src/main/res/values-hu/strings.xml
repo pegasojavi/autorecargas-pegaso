@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Töltőpont beolvasása</string>
+    <string name="qrscanner_permission_rationale">Szükségünk van a kamerára a töltő QR-kódjának beolvasásához. Soha nem mentünk el semmilyen képet.</string>
+    <string name="qrscanner_permission_action">Kamera engedélyezése</string>
+</resources>

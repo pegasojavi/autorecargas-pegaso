@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chargerdetail_open_app_action">Åbn app</string>
+    <string name="chargerdetail_get_directions_action">Rutevejledning</string>
+    <string name="chargerdetail_connector_type1">Type 1</string>
+    <string name="chargerdetail_connector_type2">Type 2</string>
+    <string name="chargerdetail_connector_type3">Type 3</string>
+    <string name="chargerdetail_connector_ccs1">CCS1</string>
+    <string name="chargerdetail_connector_ccs2">CCS2</string>
+    <string name="chargerdetail_connector_chademo">CHAdeMO</string>
+    <string name="chargerdetail_connector_tesla">Tesla</string>
+    <string name="chargerdetail_connector_domestic">Almindelig stikkontakt</string>
+    <string name="chargerdetail_connector_wireless">Trådløs</string>
+    <string name="chargerdetail_connector_unknown">Stik</string>
+</resources>

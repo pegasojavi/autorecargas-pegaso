@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Scansiona il punto di ricarica</string>
+    <string name="qrscanner_permission_rationale">Ci serve la fotocamera per leggere il codice QR del punto di ricarica. Nessuna immagine viene mai salvata.</string>
+    <string name="qrscanner_permission_action">Consenti fotocamera</string>
+</resources>

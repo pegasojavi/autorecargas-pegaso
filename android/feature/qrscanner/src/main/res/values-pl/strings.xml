@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Zeskanuj punkt ładowania</string>
+    <string name="qrscanner_permission_rationale">Potrzebujemy dostępu do aparatu, aby odczytać kod QR ładowarki. Żadne zdjęcie nie jest zapisywane.</string>
+    <string name="qrscanner_permission_action">Zezwól na aparat</string>
+</resources>

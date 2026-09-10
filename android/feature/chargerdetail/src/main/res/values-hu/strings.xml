@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chargerdetail_open_app_action">Alkalmazás megnyitása</string>
+    <string name="chargerdetail_get_directions_action">Útvonal</string>
+    <string name="chargerdetail_connector_type1">1-es típus</string>
+    <string name="chargerdetail_connector_type2">2-es típus</string>
+    <string name="chargerdetail_connector_type3">3-as típus</string>
+    <string name="chargerdetail_connector_ccs1">CCS1</string>
+    <string name="chargerdetail_connector_ccs2">CCS2</string>
+    <string name="chargerdetail_connector_chademo">CHAdeMO</string>
+    <string name="chargerdetail_connector_tesla">Tesla</string>
+    <string name="chargerdetail_connector_domestic">Háztartási aljzat</string>
+    <string name="chargerdetail_connector_wireless">Vezeték nélküli</string>
+    <string name="chargerdetail_connector_unknown">Csatlakozó</string>
+</resources>

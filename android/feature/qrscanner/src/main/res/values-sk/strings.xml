@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Naskenujte nabíjací bod</string>
+    <string name="qrscanner_permission_rationale">Potrebujeme prístup k fotoaparátu, aby sme mohli načítať QR kód nabíjačky. Žiadny obrázok sa neukladá.</string>
+    <string name="qrscanner_permission_action">Povoliť fotoaparát</string>
+</resources>

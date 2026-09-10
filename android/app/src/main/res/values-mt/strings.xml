@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AutoRecargas Pegaso</string>
+    <string name="qr_not_recognized">Ma għarafniex dan il-kodiċi QR</string>
+    <string name="provider_app_unknown">Għadna ma nafux l-app ta\' dan l-operatur</string>
+    <string name="provider_disambiguation_title">Agħżel app li tiftaħ</string>
+    <string name="provider_disambiguation_cancel">Ikkanċella</string>
+</resources>

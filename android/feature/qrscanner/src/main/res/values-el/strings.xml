@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Σάρωση σημείου φόρτισης</string>
+    <string name="qrscanner_permission_rationale">Χρειαζόμαστε την κάμερα για να διαβάσουμε τον κωδικό QR του φορτιστή. Καμία εικόνα δεν αποθηκεύεται ποτέ.</string>
+    <string name="qrscanner_permission_action">Να επιτρέπεται η κάμερα</string>
+</resources>

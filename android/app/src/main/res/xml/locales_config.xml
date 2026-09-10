@@ -21,4 +21,40 @@
 <locale-config xmlns:android="http://schemas.android.com/apk/res/android">
     <locale android:name="en" />
     <locale android:name="es" />
+    <!-- 24 idiomas oficiales de la UE (los 22 restantes tras en/es), más
+         idiomas cooficiales de estados miembros — a petición del usuario
+         (2026-09-10). Traducciones generadas sin revisión de hablante
+         nativo (asunción ya documentada en CLAUDE.md sección 6/12 para
+         irlandés/maltés, ahora extendida de facto a todo este lote) —
+         pendiente de QA nativa antes de publicar. -->
+    <locale android:name="fr" />
+    <locale android:name="de" />
+    <locale android:name="it" />
+    <locale android:name="pt" />
+    <locale android:name="nl" />
+    <locale android:name="pl" />
+    <locale android:name="ro" />
+    <locale android:name="cs" />
+    <locale android:name="sk" />
+    <locale android:name="hu" />
+    <locale android:name="bg" />
+    <locale android:name="el" />
+    <locale android:name="hr" />
+    <locale android:name="sl" />
+    <locale android:name="sv" />
+    <locale android:name="da" />
+    <locale android:name="fi" />
+    <locale android:name="et" />
+    <locale android:name="lv" />
+    <locale android:name="lt" />
+    <locale android:name="ga" />
+    <locale android:name="mt" />
+    <!-- Cooficiales de estados miembros de la UE (no idiomas oficiales de
+         la UE en sí) — sin precedente previo en este proyecto, traducidos
+         desde cero. -->
+    <locale android:name="ca" />
+    <locale android:name="eu" />
+    <locale android:name="gl" />
+    <locale android:name="lb" />
+    <locale android:name="fy" />
 </locale-config>

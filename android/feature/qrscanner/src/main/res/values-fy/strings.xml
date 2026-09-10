@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Laadpeal scanne</string>
+    <string name="qrscanner_permission_rationale">Wy hawwe de kamera nedich om de QR-koade fan de laadpeal te lêzen. Der wurdt gjin ôfbylding bewarre.</string>
+    <string name="qrscanner_permission_action">Kamera tastean</string>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Eskaneatu kargatze-puntua</string>
+    <string name="qrscanner_permission_rationale">Kamera behar dugu kargagailuaren QR kodea irakurtzeko. Ez da inolako irudirik gordetzen.</string>
+    <string name="qrscanner_permission_action">Baimendu kamera</string>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Scanner le point de charge</string>
+    <string name="qrscanner_permission_rationale">Nous avons besoin de la caméra pour lire le code QR de la borne. Aucune image n\'est jamais enregistrée.</string>
+    <string name="qrscanner_permission_action">Autoriser la caméra</string>
+</resources>

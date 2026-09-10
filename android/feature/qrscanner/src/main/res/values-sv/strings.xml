@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="qrscanner_title">Skanna laddstation</string>
+    <string name="qrscanner_permission_rationale">Vi behöver kameran för att läsa laddarens QR-kod. Ingen bild sparas någonsin.</string>
+    <string name="qrscanner_permission_action">Tillåt kamera</string>
+</resources>
