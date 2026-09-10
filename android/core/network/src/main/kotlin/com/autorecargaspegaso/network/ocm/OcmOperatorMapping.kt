@@ -37,6 +37,13 @@ object OcmOperatorMapping {
         // verificado en vivo contra GET /v3/referencedata (2026-09-10):
         // exactamente "Atlante", sin sufijo de país.
         "Atlante" to "atlante",
+        // Mismo patrón de bug otra vez, reportado por el usuario: cargadores
+        // cuyo operador nativo real en OCM ES Electromaps o eTecnic (no solo
+        // apps de roaming sobre otras redes) no abrían nada. Títulos
+        // verificados en vivo contra GET /v3/referencedata (2026-09-10).
+        "Electromaps" to "electromaps",
+        "eTecnic" to "etecnic", // "T" mayúscula en el título real de OCM, ojo
+
 
         // Shell Recharge: no existe una entrada genérica "Shell Recharge"
         // en OCM — solo variantes por país/marca. Solo se listan las

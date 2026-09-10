@@ -125,6 +125,13 @@
       "androidPackage": "com.atlante.charging",
       "deepLinkScheme": null,
       "playStoreId": "com.atlante.charging"
+    },
+    {
+      "providerId": "etecnic",
+      "displayName": "EVcharge",
+      "androidPackage": "com.etecnic.evchargenew",
+      "deepLinkScheme": null,
+      "playStoreId": "com.etecnic.evchargenew"
     }
   ]
 }

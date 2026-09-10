@@ -1126,6 +1126,45 @@ de decisión, son trabajo pendiente de `builder-android`):**
     frame, con un `LinearProgressIndicator` mientras `isRefreshing` es
     verdadero.
 
+- ✅ **Resuelto (2026-09-10), crítico: el selector multi-app nunca
+  aparecía en dispositivo real, ni siquiera con cargadores donde debía
+  (p. ej. Eranovum).** Causa raíz real (verificada independientemente,
+  no solo plausible): `AndroidManifest.xml` no declaraba ningún
+  `<queries>`. Con `targetSdk 36` (por encima del umbral de Android 11),
+  la restricción de visibilidad de paquetes hace que
+  `PackageManager.getLaunchIntentForPackage()` —usado por
+  `AndroidChargerAppLauncher.isInstalled()`— devuelva `null` para
+  cualquier app de terceros no declarada, **esté instalada o no**. Eso
+  dejaba `installed` siempre vacío: nunca se alcanzaba ni "una instalada"
+  ni "2+ instaladas", así que probablemente también "abrir app" caía
+  siempre a la ficha de la tienda aunque la app ya estuviera en el
+  teléfono. Los tests unitarios no lo detectaban porque mockean
+  `PackageManager` por completo. Corregido añadiendo `<queries>` con los
+  19 `androidPackage` de `providers.json`. **Riesgo de mantenimiento real
+  y ya señalado:** añadir un proveedor nuevo exige tocar `providers.json`
+  y este bloque del manifest a mano, sin nada que falle si se
+  desincronizan — fast-follow razonable: un test que compare ambos
+  conjuntos de paquetes, o generar el bloque en build time.
+- ✅ **Resuelto (2026-09-10): más operadores nativos sin mapear** —mismo
+  patrón que Mercadona/Repsol/Atlante— Electromaps y eTecnic (app real
+  "EVcharge", `com.etecnic.evchargenew`) también aparecían como operador
+  nativo de algunos puntos en OCM sin estar en `OcmOperatorMapping.kt`.
+  Añadidos ambos, títulos verificados en vivo.
+- 📋 **Nuevo:** `docs/providers/ocm-unmapped-candidates.md` — 380
+  operadores europeos que aparecen en OCM sin mapear todavía, sin
+  verificar uno a uno (a diferencia de `docs/providers/*.md`), como lista
+  de trabajo para ir confirmando app real caso a caso.
+- 💡 **Propuesta evaluada, no implementada: pestaña de "Itinerario"**
+  (buscar cargadores a lo largo de una ruta, no solo alrededor de un
+  punto). Viable con **OpenRouteService** (nivel gratuito real, 2000
+  peticiones/día, basado en OSM, sin Play Services — mismo patrón que
+  OCM/Nominatim) para la geometría de la ruta, más un overlay `Polyline`
+  de osmdroid (ya usado el mismo Overlay que los pines) y la distancia
+  Haversine que ya existe en el código para muestrear cargadores a lo
+  largo del trazado. Tamaño comparable al escáner QR o los filtros —
+  tarea propia, no un fix rápido; pendiente de que el product owner la
+  priorice.
+
 Ya no hay pendientes 🔶 de decisión del product owner sobre el alcance — lo
 que queda de la lista original es ejecución:
 

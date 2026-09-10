@@ -8,6 +8,49 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
+    <!--
+      Bug real reportado en dispositivo: el selector multi-app (CLAUDE.md
+      sección 0/3, "2 o más apps candidatas instaladas a la vez") nunca
+      aparecía (p. ej. con cargadores Eranovum, candidatas eranovum/zunder/
+      waylet), y probablemente también hacía que "abrir app" llevara
+      siempre a la ficha de la tienda aunque la app YA estuviera instalada.
+
+      Causa raíz: `targetSdk 36` (muy por encima de API 30) activa por
+      defecto la restricción de visibilidad de paquetes de Android 11+ —
+      sin declarar aquí las apps de proveedor, `PackageManager
+      .getLaunchIntentForPackage(pkg)` (usado por
+      `AndroidChargerAppLauncher.isInstalled()`) devuelve `null` para
+      CUALQUIER app de terceros no declarada, esté instalada o no. Eso
+      dejaba `installed` siempre vacío: nunca ">= 2" (nunca selector) y
+      nunca ninguna app "detectada como instalada" (siempre acababa en la
+      tienda). Debe reflejar exactamente los `androidPackage` de
+      `feature/applauncher/src/main/assets/providers.json` — si se añade un
+      proveedor nuevo ahí, hay que añadirlo aquí también (no hay forma de
+      generar este bloque automáticamente desde un asset en tiempo de
+      compilación sin una tarea Gradle propia, fuera de alcance de este fix).
+    -->
+    <queries>
+        <package android:name="com.cleevio.ionity.android.app" /> <!-- Ionity -->
+        <package android:name="com.teslamotors.tesla" /> <!-- Tesla -->
+        <package android:name="nl.fastned.my" /> <!-- Fastned -->
+        <package android:name="com.shell.sitibv.retail" /> <!-- Shell Recharge -->
+        <package android:name="com.xitaso.plugsurfing" /> <!-- Plugsurfing -->
+        <package android:name="eu.allego.app" /> <!-- Allego -->
+        <package android:name="com.enbw.ev" /> <!-- EnBW mobility+ -->
+        <package android:name="es.iberdrola.recargaverde" /> <!-- Movilidad Iberdrola -->
+        <package android:name="com.enel.mobile.recharge2" /> <!-- Endesa On Your Way -->
+        <package android:name="es.wenea.app.client" /> <!-- Wenea -->
+        <package android:name="es.easycharger.app" /> <!-- Zunder -->
+        <package android:name="com.chargemap_beta.android" /> <!-- Chargemap -->
+        <package android:name="com.total.europe" /> <!-- TotalEnergies Charge Europe -->
+        <package android:name="com.mdf.repsol" /> <!-- Waylet -->
+        <package android:name="com.enredats.electromaps" /> <!-- Electromaps -->
+        <package android:name="es.edp.edpcharge" /> <!-- EDP Charge -->
+        <package android:name="com.placetoplug.eranovum" /> <!-- Eranovum -->
+        <package android:name="com.atlante.charging" /> <!-- myAtlante -->
+        <package android:name="com.etecnic.evchargenew" /> <!-- EVcharge (eTecnic) -->
+    </queries>
+
     <application
         android:name=".AutoRecargasPegasoApplication"
         android:allowBackup="true"
