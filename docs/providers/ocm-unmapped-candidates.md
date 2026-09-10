@@ -4,13 +4,20 @@ Generado 2026-09-10 desde `GET /v3/referencedata` real (996 operadores en todo e
 
 Uso: si reconoces un nombre de la lista (por haberlo visto en el mapa de la app), dime cual es su app real (nombre + package Android si lo sabes) y lo anado a `OcmOperatorMapping.kt`/`providers.json` igual que se hizo con Atlante/Electromaps/eTecnic.
 
-**Aviso sobre los 380: muchos, probablemente, nunca tendrán app propia.** Una
-parte significativa de la lista son pequeñas eléctricas municipales alemanas
-("Stadtwerke X", "EWx", "SWx") y sindicatos departamentales franceses de
-energía ("SDEG16", "SDET", "USEDA"...) que estructuralmente cargan a través
-de plataformas de roaming de terceros (Ladenetz.de, Hubject) en vez de tener
-una app de consumidor propia — verificarlos uno a uno tiene retorno bajo.
-Priorizar primero las marcas paneuropeas/nacionales reconocibles.
+**Corrección (2026-09-10, tras verificación real a petición del usuario):**
+la suposición inicial de este párrafo ("los municipales seguramente no
+tienen app") era **incorrecta** para el caso alemán — verificado con
+búsquedas reales, ver tabla "Operadores municipales/regionales" más abajo.
+Muchas eléctricas municipales alemanas SÍ tienen app propia (EWE Go,
+mainova:charge, L-Charge de Leipzig...), y las que no, en su mayoría son
+miembro de **ladenetz.de**, que tiene su propia app paraguas
+(`de.ladenetz.app`) usada por 260+ eléctricas municipales — cubre a muchas
+de golpe en vez de tener que mapear cada una por separado. El caso francés
+(SDEG16 y similares sindicatos departamentales) sí parece confirmarse sin
+app propia — dependen de tarjeta RFID + el agregador Chargemap. Sigue sin
+verificarse uno a uno el resto de municipales; no asumir el patrón sin
+comprobar cada bloque (alemán vs. francés vs. otros países ya se ha visto
+que se comportan distinto).
 
 ## Verificados — ronda 1 (2026-09-10, `researcher-android`, vía búsqueda web real)
 
@@ -40,12 +47,39 @@ de tocar código, mismo criterio que Atlante/Electromaps/eTecnic).
 | Weev (Ireland) | My Weev | — | App confirmada por nombre, pero el único package encontrado (`com.plugsurfing.PulzeEV`) parece de una marca anterior (Pulze/Plugsurfing) antes del rebranding a Weev — **no usar sin confirmar en la ficha actual de Play Store**. |
 | BP Pulse (UK) | bp pulse | Ambiguo: `com.aml.evapp`, `co.uk.bppulselive.app3` y `com.bp.mobile.bppulse.us` aparecen los tres asociados a "bp pulse" | **Conflicto sin resolver** — tres packages distintos en los resultados; no mapear hasta abrir la ficha real de Play Store desde UK y confirmar cuál es la app vigente. |
 
-**Siguiente ronda:** continuar con el resto de marcas reconocibles de la
-lista (p. ej. Scottish Power, Naturgy, Moeve, VIRTA ya cubierto arriba,
-Rompetrol, Kople, Lad Opp, ZSE Drive, Silverstone Green Energy...) y
-descartar explícitamente como "sin app, cubierto por roaming de terceros"
-los operadores municipales alemanes/franceses de la lista en vez de
-buscarlos uno a uno sin necesidad.
+## Operadores municipales / regionales — verificación real (2026-09-10)
+
+Petición explícita del usuario ("los operadores municipales también deben
+buscarse") — corrige la suposición del aviso de arriba. Muestra verificada,
+no las ~75 eléctricas municipales alemanas + sindicatos franceses
+completos (sigue pendiente el resto uno a uno):
+
+| Título en lista | App real | Package Android | Notas |
+|---|---|---|---|
+| ladenetz.de | ladeapp | `de.ladenetz.app` | **Umbrella app de 260+ eléctricas municipales alemanas** — candidata a "app de roaming" compartida para cualquier municipal alemana sin app propia confirmada, en vez de mapear cada una individualmente. Verificar primero si el `OperatorInfo.Title` real de OCM para cada Stadtwerke individual coincide con el nombre del propio Stadtwerke o ya aparece como "ladenetz.de" directamente. |
+| EWE | EWE Go - Elektroauto laden | `de.ewe.go.app` | App propia confirmada, específica de carga pública (no confundir con "Mein EWE Energie", que es facturación doméstica). |
+| Mainova | mainova:charge | `de.mainladen.b2c` | App propia confirmada, pero Mainova recomienda a sus clientes usar además la app de **Shell Recharge** (ya mapeada) para localizar sus puntos públicos — puede que convenga mapear Mainova hacia `shell-recharge` como alternativa además de su app propia. |
+| Stadtwerke Leipzig SWL | L-Charge | `com.energy_app_provider.leipziger` | App propia confirmada, específica de Leipzig. |
+| N-ERGIE | Ladeverbund+ | Sin confirmar (no se encontró package explícito) | App regional compartida (norte de Baviera), no exclusiva de N-ERGIE — varios operadores de la zona podrían compartirla. Pendiente confirmar package y qué otros operadores de la lista la comparten. |
+| Stadtwerke Münster | — | — | **Sin app propia de localización de carga pública confirmada** — "münster:dynamisch" es de tarificación doméstica dinámica, no de carga pública. Probablemente depende de ladenetz.de o similar; no mapear como app propia. |
+| SDEG16 (FR) | — | — | **Sin app propia confirmada** — red "MobiVE", acceso por tarjeta RFID, puntos visibles vía Chargemap (agregador de roaming, ya mapeado). Confirma el patrón francés de "sin app propia" para este caso concreto — no generalizar sin comprobar los demás sindicatos departamentales de la lista. |
+
+**Conclusión práctica:** no existe un patrón único "municipal = sin app" ni
+"municipal = con app" — varía por país y por operador concreto, hay que
+seguir verificando. El hallazgo de mayor valor es **ladenetz.de** como
+umbrella: antes de buscar cada Stadtwerke alemán de la lista una a una,
+tiene más sentido (a) confirmar qué título exacto usa OCM para cargadores
+servidos por ladenetz.de y (b) verificar cuáles de las ~75 eléctricas
+municipales alemanas de la lista son miembro de ladenetz.de vs. tienen app
+propia como EWE/Mainova/Leipzig.
+
+**Siguiente ronda:** continuar con el resto de marcas reconocibles no
+municipales (p. ej. Scottish Power, Naturgy, Moeve, Rompetrol, Kople, Lad
+Opp, ZSE Drive, Silverstone Green Energy...), completar la lista de
+eléctricas municipales alemanas restantes (~70 más) contrastando membresía
+en ladenetz.de antes de buscarlas una a una, y verificar el resto de
+sindicatos departamentales franceses (SDET, SDEY, Sigeif, USEDA) para
+confirmar si comparten el mismo patrón "sin app propia" de SDEG16.
 
 | Titulo real en OCM | Web |
 |---|---|
