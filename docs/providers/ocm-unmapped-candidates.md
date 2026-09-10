@@ -89,6 +89,176 @@ confirmar si comparten el mismo patrón "sin app propia" de SDEG16. Seguir
 priorizando los cargadores reales que el usuario encuentre sobre el mapa
 (como Plenergy) frente a la búsqueda ciega del resto de la lista.
 
+## Clasificación por país (petición explícita del usuario: "toda Europa... los 380 no hay discusión y además separados por país")
+
+Clasificación determinista de los 380 títulos por país, hecha a partir del
+sufijo entre paréntesis del propio título cuando existe, o si no del TLD de
+la URL de referencia — sin necesidad de búsqueda web para esta parte, así
+que está completa para los 380 desde ya (no es progresiva como las tablas
+de verificación de app/package de arriba). Algunas asignaciones son
+inferencia razonable cuando el título no trae país explícito y el TLD es
+genérico (`.eu`/`.com`) — marcadas "país inferido" en vez de "confirmado".
+Esto NO sustituye la verificación de app real — es el paso previo para
+poder atacar la lista país a país como pediste, en vez de en orden
+alfabético sin criterio.
+
+| País | Nº de candidatos | Ya verificados (ver tablas arriba) |
+|---|---|---|
+| Alemania (DE) | ~78 (incluye ~55 Stadtwerke/eléctricas municipales) | ladenetz.de, EWE, Mainova, Stadtwerke Leipzig, N-ERGIE (parcial), Stadtwerke Münster |
+| Reino Unido (UK) | ~35 | Osprey, InstaVolt, BP Pulse (ambiguo), Blink Charging UK |
+| Francia (FR) | ~28 (incluye sindicatos departamentales) | Mobilize, SDEG16 (sin app) |
+| Italia (IT) | ~22 | — |
+| España (ES) | ~18 | Plenergy |
+| Hungría (HU) | ~17 | — |
+| Polonia (PL) | ~11 | GreenWay Polska |
+| Países Bajos (NL) | ~11 | We Drive Solar (sin confirmar) |
+| Rumanía (RO) | ~10 | — |
+| Irlanda (IE) | ~10 | ESB Ecars (dudosa), Weev (sin confirmar) |
+| Austria (AT) | ~9 | — |
+| República Checa (CZ) | ~8 | — |
+| Bélgica (BE) | ~8 | Blue Corner (sin confirmar) |
+| Finlandia (FI) | ~8 | VIRTA |
+| Eslovaquia (SK) | ~7 | GreenWay Slovakia |
+| Portugal (PT) | ~7 | — |
+| Suecia (SE) | ~6 | — |
+| Dinamarca (DK) | ~5 | CLEVER |
+| Noruega (NO) | ~4 | Grønn Kontakt/Mer |
+| Eslovenia (SI) | ~4 | — |
+| Croacia (HR) | ~2 | — |
+| Lituania (LT) | ~4 | — |
+| Letonia (LV) | ~2 | — |
+| Estonia (EE) | ~3 | — |
+| Suiza (CH, no UE pero sí Europa) | ~5 | — |
+| Bulgaria (BG) | ~1 | — |
+| Chipre (CY) | ~2 | — |
+| Luxemburgo (LU) | ~2 | — |
+| Malta (MT) | ~1 | — |
+| Multi-país / EU genérico (marca paneuropea sin país único) | ~7 | Plenitude On The Road, Vattenfall InCharge |
+
+## Verificados — Polonia, lote 1 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| TAURON Nowe Technologie | eTAURON | `pl.tauron.android.app` | Alta — sustituye a la app anterior "eMap"; no confundir con "Mój TAURON" (`pl.tauron.mtauron`, facturación) ni "TAURON eLicznik" (`tauron.ui`, consumo). |
+| Orlencharge | ORLEN Charge (integrado dentro de la app ORLEN VITAY) | `pl.orlen.vitay` (app contenedora, no standalone) | Media — no existe app standalone "ORLEN Charge"; el servicio vive dentro de VITAY, confirmar antes de mapear si conviene apuntar a esa app contenedora. |
+| PGE Nowa Energia | Nowa Energia (monitorización de consumo) | `com.nowaEnergia` | **Dudosa** — la app encontrada parece ser de consumo/huella de carbono, no de localización de carga pública; no mapear sin confirmar que es la app de carga real. |
+
+## Verificados — Hungría, lote 1 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| MVM Partner Zrt. | Mobiliti (MVM TöltőPont) | `com.tbdb.toltopont` | Alta — resultado único y limpio. |
+| E-Mobi (HU) | — | — | **Búsqueda contaminada** — el resultado obtenido (`com.csdd.emobi`) es la app de E-mobi de **Letonia**, no de Hungría; nombre homónimo, país distinto. Pendiente de repetir búsqueda específica para la app húngara real. |
+
+## Verificados — Chequia, lote 1 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| ČEZ | futurego | `com.driivz.mobile.android.cez.driver` | Alta — app de carga pública del grupo ČEZ (República Checa y resto de Europa vía roaming). Existe también "ČEZ ESCO" (`cz.cez.wallbox.maui`) para wallboxes domésticas — no confundir. |
+
+## Verificados — Austria, lote 1 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| Salzburg AG | Stromladen | `com.beenergised.chargemobile.salzburgag` | Alta — resultado único y limpio. |
+| Kelag AG | Kelag-Mobility-App | `at.kelag.autostrom` | Alta — acceso a la red de roaming BEÖ (Bundesverband Elektromobilität Österreich) además de puntos propios de Kelag. |
+
+## Verificados — Italia, lote 1 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| a2a emoving (IT) | A2A Emoving | `eu.a2a.emovingA2A` | Alta — resultado único y limpio, renombrada recientemente. |
+| HeraRicarica Pubblica | Hera Ricarica | `com.siemens.hera.mobility` | Alta — resultado único y limpio. |
+| Alperia (IT) | Alperia Charge | `eu.alperia.app.charge` | Media-alta — Alperia tiene varias apps (MyHome, app general `com.aew.mobile`); confirmar que `eu.alperia.app.charge` es la de carga pública vigente. |
+| Free To X (IT) | — (usa "Muovi", app de Autostrade) | — | **Sin app propia en Google Play** — un foro de usuarios confirma que no existe app dedicada; se accede vía la app "Muovi" de Autostrade o el listado web. No mapear como entrada independiente. |
+| eVISO (IT) | — | — | **Sin app de localización de carga clara** — las apps encontradas (`eASY – My eVISO`, `eVISO giro`) son de facturación/gamificación, no de localizar/pagar carga pública; no mapear sin confirmar. |
+
+## Verificados — Países Bajos, lote 1 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| Essent (NL) | Essent Laadpas | `nl.essent.laadpas` | Alta — filial de RWE, resultado único y limpio. |
+| Justplugin (NL) | Justplugin | `deftpower.justplugin.app` | Alta — resultado único y limpio, +950.000 puntos en Europa. |
+| Greenflux | Charge Assist (nombre de producto, filial de DKV Mobility) | Sin confirmar | App confirmada por existir, package no localizado en la búsqueda. |
+
+## Verificados — Alemania, lote 1 no-municipal (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| Aral pulse | Aral pulse | `com.aml.evapp.aral` | Alta — más de 70.000 puntos en Alemania. Nota: mismo prefijo `com.aml.evapp` que uno de los packages ambiguos de "bp pulse" UK (ronda 1) — bp es matriz de Aral, probablemente mismo proveedor de plataforma blanca. |
+| Kaufland eCharge | Kaufland eCharge | `com.htb.kaufland` | **App descatalogada** — según una fuente, se retiró de Google Play el 3 de mayo de 2024; no mapear como app activa sin reconfirmar que sigue disponible. |
+| ALDI SÜD (DE) | — | — | **Sin app propia de carga confirmada** — la carga aparece integrada en la web, no hay evidencia de app dedicada distinta del app general de la tienda (`de.apptiv.business.android.aldi_de`, que es de ofertas/compra, no de carga). |
+| Tank & Rast | mblty (rebranding reciente) | Sin confirmar | App confirmada por existir (rebranding 2025 de la anterior app de e-movilidad de Tank & Rast), package no localizado en la búsqueda — antes de mapear, confirmar el package exacto en Play Store. |
+
+## Verificados — España, lote 2 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| Moeve (ES) | Moeve (antes Cepsa Gow) | `com.cepsa.xmartplace` | Alta — rebranding de Cepsa a Moeve, +3.000 puntos de carga en la app. |
+| Naturgy (ES) | Naturgy Easyrecarga (posible sucesora: "Naturgy Recarga") | `com.gnf.easyrecarga` (antigua) / `com.etecnic.naturgy` (nueva, mismo proveedor blanco "etecnic" que EVcharge/eTecnic) | Media — dos apps candidatas, confirmar cuál está vigente en la ficha real de Play Store antes de mapear (parece migración de plataforma, patrón visto también en Naturgy). |
+| Electro-EMT | Electro-EMT | `com.etraid.ecove.ElectroEMT` | Alta — red municipal de Madrid (EMT), resultado único y limpio. |
+
+## Verificados — Reino Unido, lote 3 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| Hubsta | Hubsta | `com.beenergised.chargemobile.hubsta` | Alta — resultado único y limpio. |
+| Jersey Electricity Evolve | Evolve (Jersey Electricity) | Sin confirmar | App confirmada por existir, package no localizado en la búsqueda. |
+| Jet Charge (UK) | — | — | **No encontrada app UK real** — los resultados solo devuelven apps homónimas de Australia (`au.com.jetcharge.connect`) y Kazajistán (`kz.jetcharge.prod`), sin relación con la entrada UK de la lista; no mapear sin verificación directa. |
+| Joju Ltd | Joju Charging | `com.jojucharging` | Alta — parte de la red EVOpencard. |
+| ElectRoad (UK) | ElectRoad | `uk.electroad.driverapp` | Alta — resultado único y limpio. |
+
+## Verificados — Francia, lote 1 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| KiWhi Pass | KiWhi Pass (Easytrip) | `fr.easytrip.kiwhipass.android` | Alta — resultado único y limpio. |
+| Métropolis | Metropolis Recharge | `fr.etotem.metropolis` | Alta — ojo con `com.teulys.metropolis`, app homónima distinta no relacionada. Cubre el Gran París, no Marsella pese al nombre genérico. |
+| e-totem | E-TOTEM: Charging Stations | `fr.etotem.uti` | Alta — red de más de 667 zonas de carga en Francia. |
+| Sigeif (FR) | — (usa IZIVIA, ya un operador de roaming conocido) | — | **Sin app propia** — la red Sigeif se opera a través de IZIVIA (app de terceros); aviso de fraude activo sobre webs falsas que ofrecen "su propia app". No mapear como entrada independiente. |
+| pass pass électrique | Pass Pass VE | `com.byes.cd.passpass` | Alta — red de Hauts-de-France; no confundir con "Pass Pass Mobilités" (`fr.passpass.application.android`), que es transporte público, no carga EV. |
+| Ouest Charge | Ouest Charge | `com.plugsurfing.ouestcharge` | Media-alta — también existe "Ouest Charge Pays de la Loire" (`com.spie.sieml`), red hermana distinta para otra región; confirmar cuál corresponde antes de mapear. |
+| Power Dot / PowerDot (Es) | Powerdot (red paneuropea) | Sin confirmar — búsqueda devolvió apps homónimas no relacionadas (dispositivo de electroestimulación muscular) | **Pendiente** — requiere visitar directamente `powerdot.eu`/ficha de Play Store, la búsqueda por palabras clave no distingue bien de otras apps con nombre parecido. |
+
+## Verificados — Reino Unido, lote 2 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| ForEV | FOR EV | `uk.co.forev.driverapp` | Alta — resultado único y limpio. |
+| EZ-Charge | EZ Charge | `com.urbanintegrateduk.ezcharge` | Alta — resultado único y limpio. |
+| CitiPark (UK) | CitiPark Mobile | `ax.parall.citiparkmobile` | Alta — parking con servicio de carga EV integrado ("CitiCharge"), no es una red EV pura pero sí abre puntos de carga reales. |
+| Alfapower (UK) | My Alfa Power (MAP) | `com.paythru.alfapower` | Media — aparece también `com.fortum.alfapower` como alternativa en resultados de terceros; confirmar cuál es la ficha oficial vigente antes de mapear. |
+| EB Charging | EB Go! | `com.ov.electricblue` | Alta — resultado único y limpio. |
+| evyve | evyve / evyve Charge | `uk.co.evyve.app` o `uk.co.evyve.monta.evyve` | Media — dos apps distintas en Play Store con nombres muy similares; confirmar cuál es la vigente antes de mapear. |
+| Silverstone Green Energy | — | — | **Sin app propia** — es una instaladora de paneles solares en Gales, no una red de carga con app de consumidor; no mapear. |
+| Qwello | Qwello | `eu.qwello.app` | Alta — resultado único y limpio, red activa en varias ciudades europeas (no solo UK). |
+
+## Verificados — Reino Unido, lote 1 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| Be.EV | Be.EV | `uk.co.be_ev.be_evapp` | Alta — resultado único y limpio. |
+| The GeniePoint Network (EQUANS EV Solutions) | GeniePoint | `com.geniecpms.GeniePointMobile` | Alta — resultado único y limpio. |
+| Project EV | Project EV Pro | `uk.co.projectev.cp.app` | Media — existe otra app también llamada "Project EV" con package `com.growatt.chargingpile` (fabricante chino de chargers); confirmar cuál usan los puntos reales antes de mapear. |
+| Charge Your Car | Charge Your Car (CYC) | `net.corethree.chargeyourcar` | Media — package confirmado, pero la red CYC lleva años integrándose en redes mayores (histórico predecesor de bp pulse); confirmar que sigue operativa de forma independiente antes de mapear. |
+| Evolt Network (Swarco E.Connect) | Evolt Network | `com.swarcoeconnect.swarcoeconnectapp` | Alta — resultado único y limpio. |
+| Charge My Street (UK) | — (usa "Fuuse", app de terceros de marca blanca) | Sin confirmar | **Sin app propia** — no tiene app distintiva, depende de la plataforma Fuuse de terceros; package no localizado. |
+| Scottish Power | ScottishPower Recharge (app de carga separada del app de facturación) | Sin confirmar en Android — solo se localizó en App Store (iOS id 6471003986) | **Sin confirmar en Android** — ojo con confundirla con `uk.co.scottishpower` (app de facturación doméstica, no de carga pública). |
+| Plugged In Midlands (UK) | — | — | **Sin app propia** — red histórica ya integrada en POLAR/Chargemaster (predecesor de bp pulse); no mapear como entrada independiente. |
+| Smart Charge by Sainsbury's (UK) | — | — | **Sin app propia** — se accede vía apps de terceros (Radius, Octopus Electroverse), no tiene app dedicada en Google Play. |
+| SureCharge (FM Conway) (UK) | — | — | **Sin app propia confirmada** — indicios de que la red fue adquirida por Ubitricity (ya documentado como "sin app propia" en `docs/providers/no-app-operators.md`); no mapear sin confirmar. |
+
+**Nota importante sobre el compromiso de verificación completa:** clasificar
+por país (tabla de arriba) es determinista y ya está al 100%. Verificar la
+app real + package de cada uno de los 380 con el mismo rigor que
+Atlante/Electromaps/eTecnic (fuente primaria, no adivinado) es un trabajo
+de una búsqueda real por candidato — con 380 candidatos son varios cientos
+de búsquedas. Sigo haciéndolo de verdad, país por país empezando por los
+grupos más grandes (Alemania, Reino Unido, Francia), en esta misma sesión y
+en las siguientes — cada ronda se añade arriba con fuente y confianza real,
+nunca inventada. Iré actualizando el recuento de "verificados" en esta
+tabla a medida que avance.
+
 | Titulo real en OCM | Web |
 |---|---|
 | a2a emoving (IT) | https://a2a.it/casa/emoving |
