@@ -2,6 +2,7 @@
 <resources>
     <string name="map_title">AutoRecargas Pegaso</string>
     <string name="map_search_placeholder">Bilatu helbidea edo herria</string>
+    <string name="map_search_action">Bilatu</string>
     <string name="map_locate_me_action">Zentratu nire kokapenean</string>
     <string name="map_search_this_area">Bilatu eremu honetan</string>
     <string name="map_filter_connector_type1">1 mota</string>

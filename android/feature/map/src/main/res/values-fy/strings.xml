@@ -2,6 +2,7 @@
 <resources>
     <string name="map_title">AutoRecargas Pegaso</string>
     <string name="map_search_placeholder">Sykje in adres of stêd</string>
+    <string name="map_search_action">Sykje</string>
     <string name="map_locate_me_action">Sintrearje op myn lokaasje</string>
     <string name="map_search_this_area">Sykje yn dit gebiet</string>
     <string name="map_filter_connector_type1">Type 1</string>

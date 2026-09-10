@@ -2,6 +2,7 @@
 <resources>
     <string name="map_title">AutoRecargas Pegaso</string>
     <string name="map_search_placeholder">Ieškoti adreso ar miesto</string>
+    <string name="map_search_action">Ieškoti</string>
     <string name="map_locate_me_action">Centruoti pagal mano vietą</string>
     <string name="map_search_this_area">Ieškoti šioje srityje</string>
     <string name="map_filter_connector_type1">1 tipas</string>

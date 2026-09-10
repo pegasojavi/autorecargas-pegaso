@@ -2,6 +2,7 @@
 <resources>
     <string name="map_title">AutoRecargas Pegaso</string>
     <string name="map_search_placeholder">Otsi aadressi või linna</string>
+    <string name="map_search_action">Otsi</string>
     <string name="map_locate_me_action">Keskenda minu asukohale</string>
     <string name="map_search_this_area">Otsi sellelt alalt</string>
     <string name="map_filter_connector_type1">Tüüp 1</string>

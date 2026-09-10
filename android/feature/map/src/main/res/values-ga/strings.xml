@@ -2,6 +2,7 @@
 <resources>
     <string name="map_title">AutoRecargas Pegaso</string>
     <string name="map_search_placeholder">Cuardaigh seoladh nó cathair</string>
+    <string name="map_search_action">Cuardaigh</string>
     <string name="map_locate_me_action">Lárnaigh ar mo shuíomh</string>
     <string name="map_search_this_area">Cuardaigh an limistéar seo</string>
     <string name="map_filter_connector_type1">Cineál 1</string>

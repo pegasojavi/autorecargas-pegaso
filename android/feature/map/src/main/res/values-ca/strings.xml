@@ -2,6 +2,7 @@
 <resources>
     <string name="map_title">AutoRecargas Pegaso</string>
     <string name="map_search_placeholder">Cerca una adreça o ciutat</string>
+    <string name="map_search_action">Cerca</string>
     <string name="map_locate_me_action">Centra en la meva ubicació</string>
     <string name="map_search_this_area">Cerca en aquesta zona</string>
     <string name="map_filter_connector_type1">Tipus 1</string>

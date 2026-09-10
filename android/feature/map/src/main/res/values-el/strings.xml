@@ -2,6 +2,7 @@
 <resources>
     <string name="map_title">AutoRecargas Pegaso</string>
     <string name="map_search_placeholder">Αναζήτηση διεύθυνσης ή πόλης</string>
+    <string name="map_search_action">Αναζήτηση</string>
     <string name="map_locate_me_action">Κεντράρισμα στην τοποθεσία μου</string>
     <string name="map_search_this_area">Αναζήτηση σε αυτήν την περιοχή</string>
     <string name="map_filter_connector_type1">Τύπος 1</string>

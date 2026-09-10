@@ -286,7 +286,16 @@ private fun SearchBar(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         placeholder = { Text(stringResource(R.string.map_search_placeholder)) },
         singleLine = true,
-        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+        leadingIcon = {
+            // Bug real reportado: este icono era puramente decorativo (sin
+            // onClick), asimétrico con el trailingIcon de "centrar en mi
+            // ubicación" que sí funciona. Ahora dispara onSearch() igual
+            // que la tecla de acción del teclado (imeAction = Search), sin
+            // depender de que el teclado esté abierto.
+            IconButton(onClick = onSearch) {
+                Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.map_search_action))
+            }
+        },
         trailingIcon = {
             if (searching) {
                 CircularProgressIndicator(modifier = Modifier.padding(12.dp))
