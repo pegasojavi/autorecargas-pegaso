@@ -135,6 +135,59 @@ alfabético sin criterio.
 | Malta (MT) | ~1 | — |
 | Multi-país / EU genérico (marca paneuropea sin país único) | ~7 | Plenitude On The Road, Vattenfall InCharge |
 
+## Verificados — Noruega/Báltico/Finlandia, lote final (2026-09-10)
+
+**Aviso: esta ronda se cortó por límite de sesión de búsquedas web (200/200
+usadas), no por falta de candidatos** — ver nota al usuario. Últimos
+hallazgos antes del corte:
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| Kople | Kople | `com.fortum.cd.kople` | Alta — resultado único y limpio, red Fortum en Noruega. |
+| Lad Opp | Posiblemente "Elbilappen" (no confirmado como el mismo operador) | `no.elbil.ladeappen` | **Baja/dudosa** — la búsqueda no confirmó que "Lad Opp" y "Elbilappen" sean la misma marca; no mapear sin verificar directamente. |
+| Neste Lataus | Neste | `com.haaveinc.nesteoil` | Alta — cubre Finlandia, Estonia, Letonia y Lituania a la vez (multi-país báltico). |
+| Ignitis On | Ignitis ON | `com.fortum.chargeiton` | Alta — específica de carga EV; no confundir con "Ignitis Savitarna" (`lt.ignitis.app`, facturación) ni "Ignitis EnergySmart" (`lt.ignitis.smartapp`, gestión energética doméstica). Cubre Lituania, Letonia y Estonia. |
+| Sperto (DK) | — | — | **Sin confirmar** — app mencionada pero sin package localizado. |
+| OK (DK) | — | — | **Sin confirmar** — app mencionada pero sin package localizado. |
+
+## Verificados — Portugal, lote 1 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| EDP MOP | Probablemente "EDP moveON" | `com.o2e.moveox` | Media — nombre "MOP" no coincide exacto con ninguna app encontrada; EDP tiene varias apps (EDP Charge España `es.edp.edpcharge`, EDP Charge Portugal `pt.edp.evcharge`, EDP moveON `com.o2e.moveox`) — confirmar cuál corresponde al título real de OCM antes de mapear. |
+| Mobie.pt | — (red nacional MOBI.E, app "Miio" mencionada pero sin package confirmado) | Sin confirmar | **Pendiente** — MOBI.E es la red nacional portuguesa; "Miio" es la app sin necesidad de tarjeta física, pero no se localizó su package concreto. |
+
+## Verificados — Rumanía, lote 1 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| Rompetrol | Rompetrol EV-Charge | `com.rompetrol.app` | Alta — no confundir con "Rompetrol Go" (`ro.rompetrolgo.app`), que es la app general de fidelización/combustible. |
+
+## Verificados — Bélgica, lote 1 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| MobilityPlus | MobilityPlus | `be.mobilityplus.app` | Alta — resultado único y limpio, +110.000 puntos en Bélgica y 800.000 en Europa vía roaming. |
+
+## Verificados — Suiza, lote 1 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| Swisscharge (CH) | Swisscharge | `cs.swisscharge` | Media-alta — existe también variante de marca blanca para clientes AXA (`ch.swisscharge.axa.sc`); confirmar cuál corresponde antes de mapear. |
+| MOVE (CH) | MOVE – Charge anywhere | `ch.Move.EvApp` | Alta — resultado único y limpio. |
+
+## Verificados — Suecia, lote 1 (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| OKQ8 (SE) | OKQ8 Elbilsladdning | `com.okq8.elbilsladdning` | Alta — resultado único y limpio, no confundir con "OKQ8" app general (`se.q8.mobileapp`) ni "OKQ8 Bilpool" (carsharing). |
+
+## Verificados — Irlanda, actualización (2026-09-10)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| Weev (Ireland) | My Weev | `com.plugsurfing.PulzeEV` | Media-alta (revisada al alza) — repetida la búsqueda, la ficha de Play Store de "My Weev" apunta de forma consistente a este package en dos búsquedas independientes; el nombre interno conserva la marca previa (Pulze/Plugsurfing) tras el rebranding a Weev, pero parece ser la app vigente real. |
+
 ## Verificados — Polonia, lote 1 (2026-09-10)
 
 | Título en lista | App real | Package Android | Confianza / notas |
