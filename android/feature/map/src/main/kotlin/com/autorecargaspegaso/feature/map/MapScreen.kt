@@ -461,14 +461,22 @@ private fun ConnectorLeadingIcon(type: ConnectorType) {
         ConnectorType.CCS1, ConnectorType.CCS2, ConnectorType.CHADEMO,
         ConnectorType.TESLA,
         -> ConnectorGlyph(type)
-        else -> Icon(connectorTypeIcon(type), contentDescription = null)
+        // Mismo tamaño explícito que ConnectorGlyph (16dp): sin esto, Icon
+        // hereda el default de Material3 (24dp) y los 9 tipos de conector
+        // del chip no miden lo mismo entre sí.
+        else -> Icon(connectorTypeIcon(type), contentDescription = null, modifier = Modifier.size(16.dp))
     }
 }
 
 @Composable
 private fun ConnectorGlyph(type: ConnectorType, modifier: Modifier = Modifier) {
     val color = LocalContentColor.current
-    Canvas(modifier = modifier.size(18.dp)) {
+    // 16dp (antes 18dp): icono ligeramente más compacto para que quepan
+    // mejor las dos filas AC/DC de FilterRow, manteniendo distinguibles los
+    // glifos con más detalle (Type 2 con 7 pines, CHAdeMO). Debe coincidir
+    // con el Modifier.size del Icon() genérico en ConnectorLeadingIcon para
+    // que los 9 tipos de conector midan lo mismo en el chip.
+    Canvas(modifier = modifier.size(16.dp)) {
         when (type) {
             // Type 1 (SAE J1772/Yazaki) y Type 3 (Scame): conectores AC
             // "ovalados" de la misma familia, con 5 pines asimétricos.
