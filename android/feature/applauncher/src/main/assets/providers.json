@@ -139,6 +139,13 @@
       "androidPackage": "com.plenoil.plenergyapp",
       "deepLinkScheme": null,
       "playStoreId": "com.plenoil.plenergyapp"
+    },
+    {
+      "providerId": "umbrella",
+      "displayName": "Umbrella emobility",
+      "androidPackage": "com.placetoplug.elecchargepoints",
+      "deepLinkScheme": null,
+      "playStoreId": "com.placetoplug.elecchargepoints"
     }
   ]
 }

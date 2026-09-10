@@ -48,7 +48,12 @@ object OcmOperatorMapping {
         // Título real verificado en vivo contra GET /v3/referencedata
         // (2026-09-10): exactamente "Plenergy (ES)".
         "Plenergy (ES)" to "plenergy",
-
+        // Mismo patrón otra vez, encontrado por el usuario en un cargador
+        // real: cargadores cuyo operador nativo en OCM es Umbrella
+        // eMobility no abrían ninguna app. Título real verificado en vivo
+        // contra GET /v3/referencedata (2026-09-10): exactamente
+        // "Umbrella eMobility (ES)".
+        "Umbrella eMobility (ES)" to "umbrella",
 
         // Shell Recharge: no existe una entrada genérica "Shell Recharge"
         // en OCM — solo variantes por país/marca. Solo se listan las
