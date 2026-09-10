@@ -373,6 +373,88 @@ protocol ChargerAppLauncher {
   nosotros). No mezclar ambos conceptos: uno abre la app del *operador* del
   cargador, el otro abre *cualquier* app de mapas para llegar hasta él.
 
+### 3.3 Inventario de recursos potencialmente comunes entre Android e iOS
+
+Auditado por `researcher-android` el 2026-09-10 (iOS aún no tiene scaffold
+de código — solo `android/` existe hoy — así que este inventario se hace
+desde el lado Android + `docs/`, y debe revisarse otra vez cuando exista
+código iOS real). Regla del proyecto (sección 3): **sin código compartido**
+entre plataformas — lo que sigue no es "extraer una librería común", es
+identificar qué debe vivir como fuente única en `docs/` (cuando compilar
+juntos no tiene sentido, por ser Kotlin vs Swift) y detectar dónde una
+copia ya se ha desincronizado de la otra o directamente no existe todavía.
+
+**A. Correctamente centralizados hoy (fuente única en `docs/`, cada
+plataforma la reimplementa nativamente — funcionando como se diseñó):**
+- `docs/providers/<red>.md` — ficha por operador con ambas secciones
+  (Android/iOS). ⚠️ Gap detectado: Atlante, Electromaps, eTecnic, Mercadona
+  y Repsol se añadieron directamente a `providers.json`/`OcmOperatorMapping.kt`
+  (Android) en las rondas de bugs reales, pero **no tienen todavía su propia
+  ficha `docs/providers/<red>.md`** — quedan documentados solo como
+  comentarios de código y entradas en la sección 12 de este fichero.
+  Pendiente: crear esas 5 fichas para que `researcher-ios` no tenga que
+  rebuscar en el historial de esta sección para encontrar sus datos.
+- `docs/providers/roaming-agreements.md` — tabla `RoamingPartnerships`
+  conceptual. Solo implementada en código como `roaming.json` de Android;
+  no hay código iOS aún que la consuma, pero el documento en sí es la
+  fuente prevista.
+- `docs/providers/no-app-operators.md`, `docs/providers/ocm-unmapped-candidates.md`
+  — investigación agnóstica de plataforma, sin equivalente por-plataforma
+  que mantener sincronizado.
+- `docs/legal/privacy-policy.md` — contenido único, sección 10.
+
+**B. NO centralizados todavía / riesgo real de duplicación o divergencia:**
+- **Traducciones (i18n).** `docs/i18n/*.properties` (29 ficheros) se pensó
+  como fuente común pero está **obsoleto** (esquema de claves de una fase
+  de producto anterior, sección 12, 2026-09-10) — el contenido real y
+  actualizado de las 39 claves × 29 locales existe **solo** dentro de
+  `android/**/res/values-<lang>/strings.xml` (116 ficheros en 4 módulos).
+  Cuando exista scaffold iOS, `Localizable.strings` no debe traducirse
+  desde cero ni desde `docs/i18n/*.properties` (obsoleto) — debe portarse
+  desde el contenido real de Android. Recomendación para `planner`: o bien
+  regenerar `docs/i18n/*.properties` con las claves reales antes de que
+  arranque `researcher-ios`, o documentar explícitamente que Android es la
+  fuente de verdad de traducción hasta que se haga esa regeneración.
+- **Constantes de dominio (`ConnectorType`, quirks de matching de OCM).**
+  Los 9 tipos de conector reales y el orden de comprobación de substrings
+  (CCS antes que "Type 2" genérico, sección 12) solo existen como enum +
+  comentarios Kotlin en `core-domain`/`MapScreen.kt`. iOS necesitará el
+  mismo enum y el mismo orden de comprobación, y hoy no hay ningún
+  documento neutral que se lo explique sin leer el código Android.
+  Recomendación: documento corto (`docs/providers/connector-types.md`, o
+  una subsección aquí) con los 9 tipos y las trampas de texto de OCM ya
+  descubiertas, para que `researcher-ios` no tenga que redescubrirlas.
+- **Tabla completa título-OCM → `providerId`.** `OcmOperatorMapping.kt`
+  contiene decenas de títulos reales verificados a mano contra
+  `GET /v3/referencedata` (capitalización exacta, variantes por país de
+  Shell/TotalEnergies, casos Mercadona→iberdrola, Enel X→endesa-x, etc.)
+  que **no están replicados en ningún `docs/providers/*.md`** — solo como
+  comentarios Kotlin. Si `researcher-ios` implementa su propio mapeo OCM
+  de forma independiente, corre el riesgo de redescubrir uno a uno los
+  mismos bugs ya resueltos en Android. Recomendación: volcar la tabla
+  completa a un documento neutral (p. ej.
+  `docs/providers/ocm-operator-titles.md`) como fuente única.
+- **Clave de API de OCM.** Android la guarda en `android/local.properties`
+  (no versionado) → `BuildConfig.OCM_API_KEY`. iOS necesitará la misma
+  clave real en su propio mecanismo (`Config.xcconfig`/`Info.plist`, igual
+  de no versionado) — mismo valor, mecanismo de provisión distinto. No hay
+  hoy ninguna nota que diga explícitamente "es la misma clave, hay que
+  reprovisionarla en iOS", más allá de esta entrada.
+- **Identidad visual (icono de app, paleta "Eco" negro/bronce).** Solo
+  existe como `VectorDrawable` Android (con gradientes `<aapt:attr>`, sección
+  12) y descripción en prosa — no hay un asset maestro (SVG/Figma) del que
+  deriven ambas plataformas. `builder-ios` tendría que aproximar los
+  colores/degradados a ojo desde la descripción de esta sección. No
+  bloqueante para el MVP funcional, pero sí para la coherencia de marca
+  entre tiendas.
+
+**Mantenimiento de este inventario:** revisar y actualizar cada vez que se
+detecte un recurso nuevo compartido implícitamente entre plataformas
+(ronda de bugs, feature nueva) o cuando arranque el scaffold real de iOS,
+momento en el que buena parte de la sección B debería empezar a resolverse
+o, si no se resuelve, quedar registrada aquí como deuda explícita en vez de
+descubrirse tarde por divergencia entre apps.
+
 ---
 
 ## 4. Stack tecnológico

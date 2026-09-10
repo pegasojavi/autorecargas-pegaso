@@ -4,6 +4,49 @@ Generado 2026-09-10 desde `GET /v3/referencedata` real (996 operadores en todo e
 
 Uso: si reconoces un nombre de la lista (por haberlo visto en el mapa de la app), dime cual es su app real (nombre + package Android si lo sabes) y lo anado a `OcmOperatorMapping.kt`/`providers.json` igual que se hizo con Atlante/Electromaps/eTecnic.
 
+**Aviso sobre los 380: muchos, probablemente, nunca tendrán app propia.** Una
+parte significativa de la lista son pequeñas eléctricas municipales alemanas
+("Stadtwerke X", "EWx", "SWx") y sindicatos departamentales franceses de
+energía ("SDEG16", "SDET", "USEDA"...) que estructuralmente cargan a través
+de plataformas de roaming de terceros (Ladenetz.de, Hubject) en vez de tener
+una app de consumidor propia — verificarlos uno a uno tiene retorno bajo.
+Priorizar primero las marcas paneuropeas/nacionales reconocibles.
+
+## Verificados — ronda 1 (2026-09-10, `researcher-android`, vía búsqueda web real)
+
+Petición explícita del usuario ("quiero verificar los 380 ya que esta app es
+para distribución masiva"): primer lote real de verificación, priorizando
+marcas paneuropeas/nacionales con más probabilidad de tener app de
+consumidor. **No son 380 — son 15 de 380**, el resto sigue pendiente (ver
+aviso arriba). Confianza distinta por fila, ver columna Notas — ninguno de
+estos se ha volcado todavía a `OcmOperatorMapping.kt`/`providers.json`
+(pendiente de que el usuario confirme cuáles ve realmente en su zona antes
+de tocar código, mismo criterio que Atlante/Electromaps/eTecnic).
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| Osprey Charging (UK) | Osprey: EV Charging | `uk.co.ospreycharging.mobileapp` | Alta — resultado único y limpio. |
+| InstaVolt Ltd | InstaVolt | `com.app.instavolt` | Alta — resultado único y limpio (existe también `com.app.instavolt_fleet` para flotas). |
+| Grønn Kontakt | Mer Connect Norway (rebranding: Grønn Kontakt → Mer, propiedad de Statkraft) | `no.giantleap.gronn.kontakt` | Alta, pero ojo al rebranding — el nombre visible en tienda ya no es "Grønn Kontakt". |
+| Greenway Polska (PL) / Greenway (SK, no está en la lista de 380 pero es la misma red) | GreenWay Slovakia / GreenWay EV Charging | `sk.greenway.evcharge` (Eslovaquia) / `pl.greenway.evcharge` (Polonia) | Alta — dos apps regionales confirmadas, mismo grupo. |
+| CLEVER | Clever | `dk.clever.app` | Alta — no confundir con "CleverCharge" (`com.danlaw.evse`), app de terceros no relacionada. |
+| Vattenfall InCharge | InCharge | `com.vattenfall.incharge` | Alta para UK/global; existe variante `nl.nuon.laadpunten` para el mercado neerlandés (marca Nuon, filial de Vattenfall). |
+| Mobilize (FR) | Mobilize Pass | `com.renault.mobilize` | Alta — filial de Renault, resultado único y limpio. |
+| Plenitude On The Road (EU) | Plenitude On The Road (antes "Be Charge") | `com.bepower.BeCharge` | Alta — coincide con el nombre ya listado en los 380. Ojo: Eni/Plenitude tiene además `com.eni.enigaseluce` (facturas gas/luz, no carga) y `com.eni.charging.app` ("eni.charge", posible app distinta para hubs propios) — no confundir los tres. |
+| Blink Charging (Europe) / Blink Charging (UK) | Blink Charging UK & Ireland / Blink Drive | `com.blinknetwork.europe` (UK/Irlanda) / `com.blinkcharging.mobility` (roaming multi-país Europa) | Media-alta — dos apps distintas del mismo grupo, confirmar cuál aplica antes de mapear. |
+| ESB Ecars | ecar connect (app histórica) | `com.esb.ecars` | **Baja/dudosa** — un artículo de Irish Times indica que ESB pidió a sus usuarios "ignorar" esta app; puede estar descontinuada a favor de "EV Plug In" (`com.driivz.mobile.android.esb.driver`, plataforma Driivz). No mapear sin confirmar cuál está activa ahora mismo. |
+| Blue Corner (Belgium) | — | — | **No confirmada como app propia** — Blue Corner es una red de Blink Charging; probablemente cubierta por `com.blinkcharging.mobility` (Blink Drive) en vez de tener app propia distinta. No mapear como entrada independiente sin confirmar. |
+| We Drive Solar (Netherlands) | Posible "Laadpaal" (mencionada en su web) | — | **Sin confirmar** — la búsqueda no dio un package inequívoco; requiere visitar directamente su ficha de Play Store. |
+| Weev (Ireland) | My Weev | — | App confirmada por nombre, pero el único package encontrado (`com.plugsurfing.PulzeEV`) parece de una marca anterior (Pulze/Plugsurfing) antes del rebranding a Weev — **no usar sin confirmar en la ficha actual de Play Store**. |
+| BP Pulse (UK) | bp pulse | Ambiguo: `com.aml.evapp`, `co.uk.bppulselive.app3` y `com.bp.mobile.bppulse.us` aparecen los tres asociados a "bp pulse" | **Conflicto sin resolver** — tres packages distintos en los resultados; no mapear hasta abrir la ficha real de Play Store desde UK y confirmar cuál es la app vigente. |
+
+**Siguiente ronda:** continuar con el resto de marcas reconocibles de la
+lista (p. ej. Scottish Power, Naturgy, Moeve, VIRTA ya cubierto arriba,
+Rompetrol, Kople, Lad Opp, ZSE Drive, Silverstone Green Energy...) y
+descartar explícitamente como "sin app, cubierto por roaming de terceros"
+los operadores municipales alemanes/franceses de la lista en vez de
+buscarlos uno a uno sin necesidad.
+
 | Titulo real en OCM | Web |
 |---|---|
 | a2a emoving (IT) | https://a2a.it/casa/emoving |
