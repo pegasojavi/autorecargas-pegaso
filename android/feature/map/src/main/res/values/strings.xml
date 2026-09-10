@@ -21,4 +21,6 @@
     <string name="map_dismiss_action">Dismiss</string>
     <string name="map_my_location_label">Me</string>
     <string name="map_toggle_list_action">List view</string>
+    <string name="map_zoom_in_action">Zoom in</string>
+    <string name="map_zoom_out_action">Zoom out</string>
 </resources>

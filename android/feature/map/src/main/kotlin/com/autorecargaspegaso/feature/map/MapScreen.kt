@@ -24,10 +24,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Outlet
 import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Wifi
@@ -36,6 +38,8 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -84,6 +88,7 @@ import org.osmdroid.events.ScrollEvent
 import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import java.io.File
@@ -181,6 +186,12 @@ fun MapScreen(
                 },
             )
         },
+        // Abajo-izquierda (a petición del usuario): el control de zoom
+        // propio de OsmMapView vive abajo-derecha (ver MapZoomControls), así
+        // que fijar el FAB en el lado opuesto evita cualquier solape entre
+        // ambos sin necesidad de coordinar paddings entre dos composables
+        // distintos.
+        floatingActionButtonPosition = FabPosition.Start,
         floatingActionButton = {
             // Extended (icono + texto visible), a petición del usuario. OJO:
             // el overload `ExtendedFloatingActionButton(icon=, text=, ...)`
@@ -293,53 +304,100 @@ private fun SearchBar(
     )
 }
 
-/** Los 9 tipos de conector relevantes en Europa (CLAUDE.md/domain.ConnectorType) — UNKNOWN queda fuera, es un cajón de sastre interno, no una categoría que el usuario elija. */
-private val FILTERABLE_CONNECTOR_TYPES = listOf(
+/**
+ * Conectores AC ("carga lenta"): monofásicos/trifásicos de baja-media
+ * potencia. Agrupados en su propia fila (petición del usuario) para
+ * distinguirlos de un vistazo de los conectores DC de la fila de abajo.
+ */
+private val AC_CONNECTOR_TYPES = listOf(
     ConnectorType.TYPE_1,
     ConnectorType.TYPE_2,
     ConnectorType.TYPE_3,
-    ConnectorType.CCS1,
-    ConnectorType.CCS2,
-    ConnectorType.CHADEMO,
-    ConnectorType.TESLA,
     ConnectorType.DOMESTIC,
     ConnectorType.WIRELESS,
 )
 
+/**
+ * Conectores DC ("carga rápida"). TESLA/NACS se trata aquí como DC —aunque
+ * el conector físico NACS también soporta AC— porque en esta app se usa en
+ * la práctica para carga rápida, que es lo relevante para agrupar con
+ * CCS1/CCS2/CHAdeMO de un vistazo.
+ */
+private val DC_CONNECTOR_TYPES = listOf(
+    ConnectorType.CCS1,
+    ConnectorType.CCS2,
+    ConnectorType.CHADEMO,
+    ConnectorType.TESLA,
+)
+
+/** Los 9 tipos de conector relevantes en Europa (CLAUDE.md/domain.ConnectorType) — UNKNOWN queda fuera, es un cajón de sastre interno, no una categoría que el usuario elija. */
+private val FILTERABLE_CONNECTOR_TYPES = AC_CONNECTOR_TYPES + DC_CONNECTOR_TYPES
+
+/**
+ * Dos filas apiladas (AC arriba, DC abajo) en vez de una única fila con
+ * scroll horizontal — a petición del usuario, para separar visualmente
+ * "carga lenta" de "carga rápida". El chip de potencia (`≥ 50 kW`) se deja
+ * al final de la fila DC: la potencia alta es sobre todo relevante para
+ * filtrar carga rápida, así que queda junto a esos chips en vez de en una
+ * tercera fila aparte. `selected`/`onToggleConnector`/accesibilidad de cada
+ * chip no cambian, solo el agrupamiento visual.
+ */
 @Composable
 private fun FilterRow(
     filters: ChargerFilters,
     onToggleConnector: (ConnectorType) -> Unit,
     onToggleMinPower: (Double) -> Unit,
 ) {
-    LazyRow(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        items(FILTERABLE_CONNECTOR_TYPES) { type ->
-            FilterChip(
-                // Activado (en color) = tipo visible; pulsar lo excluye. Ver ChargerFilters.excludedConnectorTypes.
-                selected = type !in filters.excludedConnectorTypes,
-                onClick = { onToggleConnector(type) },
-                label = { Text(connectorTypeLabel(type)) },
-                leadingIcon = {
-                    // Decorativo (sin contentDescription/semántica propia): el
-                    // texto completo y localizado sigue visible en `label`, que
-                    // ya es lo que TalkBack anuncia — el icono solo agiliza el
-                    // escaneo visual del chip (petición del usuario), no
-                    // sustituye el texto accesible (CLAUDE.md sección 9).
-                    ConnectorLeadingIcon(type)
-                },
-            )
+        LazyRow(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(AC_CONNECTOR_TYPES) { type ->
+                ConnectorFilterChip(type = type, filters = filters, onToggleConnector = onToggleConnector)
+            }
         }
-        item {
-            FilterChip(
-                selected = filters.minPowerKw == 50.0,
-                onClick = { onToggleMinPower(50.0) },
-                label = { Text(stringResource(R.string.map_filter_min_power)) },
-            )
+        LazyRow(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(DC_CONNECTOR_TYPES) { type ->
+                ConnectorFilterChip(type = type, filters = filters, onToggleConnector = onToggleConnector)
+            }
+            item {
+                FilterChip(
+                    selected = filters.minPowerKw == 50.0,
+                    onClick = { onToggleMinPower(50.0) },
+                    label = { Text(stringResource(R.string.map_filter_min_power)) },
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun ConnectorFilterChip(
+    type: ConnectorType,
+    filters: ChargerFilters,
+    onToggleConnector: (ConnectorType) -> Unit,
+) {
+    FilterChip(
+        // Activado (en color) = tipo visible; pulsar lo excluye. Ver ChargerFilters.excludedConnectorTypes.
+        selected = type !in filters.excludedConnectorTypes,
+        onClick = { onToggleConnector(type) },
+        label = { Text(connectorTypeLabel(type)) },
+        leadingIcon = {
+            // Decorativo (sin contentDescription/semántica propia): el
+            // texto completo y localizado sigue visible en `label`, que
+            // ya es lo que TalkBack anuncia — el icono solo agiliza el
+            // escaneo visual del chip (petición del usuario), no
+            // sustituye el texto accesible (CLAUDE.md sección 9).
+            ConnectorLeadingIcon(type)
+        },
+    )
 }
 
 @Composable
@@ -600,6 +658,14 @@ private fun OsmMapView(
         MapView(context).apply {
             setTileSource(TileSourceFactory.MAPNIK)
             setMultiTouchControls(true)
+            // Desactiva el control nativo de zoom de osmdroid: por defecto
+            // pinta un "+"/"–" propio (fuera del árbol de Compose, con su
+            // propio fade-out tras cualquier gesto) en una posición fija que
+            // no se coordina con el resto de la UI — se solapaba con el FAB
+            // de "Escanear QR" (bug real reportado). Sustituido por
+            // MapZoomControls, un control propio en Compose anclado
+            // abajo-derecha (ver el Box más abajo).
+            zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
             controller.setZoom(DEFAULT_ZOOM)
         }
     }
@@ -665,53 +731,94 @@ private fun OsmMapView(
         isProgrammaticCameraMove = false
     }
 
-    AndroidView(
-        factory = { mapView },
-        // El mapa se pintaba por encima de menús/chips Material3 en
-        // dispositivo real (bug reportado): los componentes Material3
-        // (SearchBar, FilterChip, CenterAlignedTopAppBar, FAB) usan `Surface`
-        // internamente, que aplica compositing offscreen para su sombra/
-        // elevación tonal; la `View` clásica de osmdroid embebida vía este
-        // `AndroidView` no participaba de ese mismo modo de compositing, así
-        // que el orden de pintado declarado por Compose dejaba de
-        // respetarse. Forzar aquí el mismo modo de compositing resuelve el
-        // conflicto sin tocar el resto de la jerarquía.
-        modifier = modifier.graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen),
-        update = { view ->
-            view.overlays.clear()
+    Box(modifier = modifier) {
+        AndroidView(
+            factory = { mapView },
+            // El mapa se pintaba por encima de menús/chips Material3 en
+            // dispositivo real (bug reportado): los componentes Material3
+            // (SearchBar, FilterChip, CenterAlignedTopAppBar, FAB) usan `Surface`
+            // internamente, que aplica compositing offscreen para su sombra/
+            // elevación tonal; la `View` clásica de osmdroid embebida vía este
+            // `AndroidView` no participaba de ese mismo modo de compositing, así
+            // que el orden de pintado declarado por Compose dejaba de
+            // respetarse. Forzar aquí el mismo modo de compositing resuelve el
+            // conflicto sin tocar el resto de la jerarquía.
+            modifier = Modifier.fillMaxSize().graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen),
+            update = { view ->
+                view.overlays.clear()
 
-            myLocation?.let { (latitude, longitude) ->
-                val meMarker = Marker(view).apply {
-                    position = GeoPoint(latitude, longitude)
-                    title = myLocationLabel
-                    icon = myLocationIcon
-                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                myLocation?.let { (latitude, longitude) ->
+                    val meMarker = Marker(view).apply {
+                        position = GeoPoint(latitude, longitude)
+                        title = myLocationLabel
+                        icon = myLocationIcon
+                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                    }
+                    view.overlays.add(meMarker)
                 }
-                view.overlays.add(meMarker)
-            }
 
-            searchedPlace?.let { place ->
-                val searchMarker = Marker(view).apply {
-                    position = GeoPoint(place.latitude, place.longitude)
-                    title = place.label
-                    icon = searchedPlaceIcon
-                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                searchedPlace?.let { place ->
+                    val searchMarker = Marker(view).apply {
+                        position = GeoPoint(place.latitude, place.longitude)
+                        title = place.label
+                        icon = searchedPlaceIcon
+                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                    }
+                    view.overlays.add(searchMarker)
                 }
-                view.overlays.add(searchMarker)
-            }
 
-            chargers.forEach { charger ->
-                val marker = Marker(view).apply {
-                    position = GeoPoint(charger.latitude, charger.longitude)
-                    title = charger.name
-                    snippet = charger.address
-                    setOnMarkerClickListener { _, _ -> onChargerClick(charger); true }
+                chargers.forEach { charger ->
+                    val marker = Marker(view).apply {
+                        position = GeoPoint(charger.latitude, charger.longitude)
+                        title = charger.name
+                        snippet = charger.address
+                        setOnMarkerClickListener { _, _ -> onChargerClick(charger); true }
+                    }
+                    view.overlays.add(marker)
                 }
-                view.overlays.add(marker)
-            }
-            view.invalidate()
-        },
-    )
+                view.invalidate()
+            },
+        )
+
+        // Control de zoom propio, abajo-derecha (fix combinado del zoom
+        // nativo de osmdroid tapando el FAB de QR, ver el
+        // `zoomController.setVisibility` de arriba): el FAB de "Escanear QR"
+        // vive en `Scaffold.floatingActionButton` con
+        // `FabPosition.Start` (abajo-izquierda), así que ambos quedan en
+        // esquinas opuestas y no se solapan.
+        MapZoomControls(
+            onZoomIn = { mapView.controller.zoomIn() },
+            onZoomOut = { mapView.controller.zoomOut() },
+            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+        )
+    }
+}
+
+/**
+ * Botones propios de zoom in/out, en vez del control nativo de osmdroid
+ * (desactivado en [OsmMapView] con `zoomController.setVisibility(NEVER)`).
+ * `IMapController.zoomIn()`/`zoomOut()` (osmdroid 6.1.20, expuestos vía
+ * `MapView.getController()`/`mapView.controller`) son los métodos reales —
+ * los equivalentes de `MapView` (`MapView.zoomIn()`/`zoomOut()`) son de
+ * visibilidad de paquete y no serían accesibles desde aquí.
+ */
+@Composable
+private fun MapZoomControls(
+    onZoomIn: () -> Unit,
+    onZoomOut: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        FilledIconButton(onClick = onZoomIn) {
+            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.map_zoom_in_action))
+        }
+        FilledIconButton(onClick = onZoomOut) {
+            Icon(Icons.Filled.Remove, contentDescription = stringResource(R.string.map_zoom_out_action))
+        }
+    }
 }
 
 /** Rectángulo visible del mapa, en grados — ver [MapViewModel.refreshVisibleArea]. */

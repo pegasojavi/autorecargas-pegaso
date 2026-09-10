@@ -20,4 +20,6 @@
     <string name="map_dismiss_action">Cerrar</string>
     <string name="map_my_location_label">Yo</string>
     <string name="map_toggle_list_action">Vista de lista</string>
+    <string name="map_zoom_in_action">Acercar</string>
+    <string name="map_zoom_out_action">Alejar</string>
 </resources>
