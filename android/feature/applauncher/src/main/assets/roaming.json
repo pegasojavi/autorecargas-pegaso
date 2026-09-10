@@ -1,11 +1,12 @@
 {
   "_comment": "RoamingPartnerships (CLAUDE.md sección 5, docs/providers/roaming-agreements.md). operador nativo -> apps de roaming con acceso confirmado, con fuente pública citada en el .md correspondiente. Unidireccional: no asumir simetría.",
   "partnerships": {
-    "ionity": ["plugsurfing"],
-    "fastned": ["plugsurfing"],
+    "ionity": ["plugsurfing", "atlante"],
+    "fastned": ["plugsurfing", "atlante"],
     "zunder": ["waylet", "electromaps"],
     "endesa-x": ["electromaps"],
     "eranovum": ["zunder", "waylet"],
     "iberdrola": ["waylet"]
-  }
+  },
+  "_atlante_note": "myAtlante da acceso además a Electra (ChargeLeague, fuente: NHOA Group press release 'Atlante partners with Chargemap...' / documentación oficial de myAtlante) — no añadido como roaming porque 'electra' todavía no existe como providerId propio en providers.json (fuera de las 13 redes del MVP); añadir cuando se documente esa red."
 }

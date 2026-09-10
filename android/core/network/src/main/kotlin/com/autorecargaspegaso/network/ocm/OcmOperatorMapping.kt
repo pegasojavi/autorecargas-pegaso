@@ -31,6 +31,12 @@ object OcmOperatorMapping {
         "Repsol - Ibil (ES)" to "waylet",
         "EDP" to "edp",
         "Eranovum (ES)" to "eranovum",
+        // Bug real reportado en dispositivo: cargadores Atlante (red
+        // ultrarrápida del grupo NHOA, presente en ES/FR/IT/PT) no abrían
+        // ninguna app — "Atlante" no estaba en esta tabla. Título real
+        // verificado en vivo contra GET /v3/referencedata (2026-09-10):
+        // exactamente "Atlante", sin sufijo de país.
+        "Atlante" to "atlante",
 
         // Shell Recharge: no existe una entrada genérica "Shell Recharge"
         // en OCM — solo variantes por país/marca. Solo se listan las

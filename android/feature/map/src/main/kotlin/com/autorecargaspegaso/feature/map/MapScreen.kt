@@ -137,18 +137,23 @@ fun MapScreen(
         viewModel.refreshVisibleArea(query.north, query.south, query.east, query.west)
     }
 
+    // Recentra en la ubicación actual y recarga cargadores cercanos —
+    // factorizado para reutilizarlo también desde el botón de "punto de
+    // mira" del buscador (bug real reportado: ese botón no hacía nada).
+    val fetchCurrentLocation = {
+        requestCurrentLocation(context) { latitude, longitude ->
+            mapCenter = latitude to longitude
+            myLocation = latitude to longitude
+            pendingAreaQuery = null
+            viewModel.loadNearbyDefault(latitude, longitude)
+        }
+    }
+
     LaunchedEffect(Unit) {
         if (!hasLocationPermission) locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
     }
     LaunchedEffect(hasLocationPermission) {
-        if (hasLocationPermission) {
-            requestCurrentLocation(context) { latitude, longitude ->
-                mapCenter = latitude to longitude
-                myLocation = latitude to longitude
-                pendingAreaQuery = null
-                viewModel.loadNearbyDefault(latitude, longitude)
-            }
-        }
+        if (hasLocationPermission) fetchCurrentLocation()
     }
     LaunchedEffect(viewModel) {
         viewModel.searchFocusEvents.collect { focus ->
@@ -203,6 +208,7 @@ fun MapScreen(
                         query = searchQuery,
                         onQueryChange = { searchQuery = it },
                         onSearch = { viewModel.search(searchQuery) },
+                        onLocateMe = { if (hasLocationPermission) fetchCurrentLocation() else locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
                         searching = current.searching,
                     )
                     current.searchError?.let { error ->
@@ -260,6 +266,7 @@ private fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
+    onLocateMe: () -> Unit,
     searching: Boolean,
 ) {
     OutlinedTextField(
@@ -273,7 +280,10 @@ private fun SearchBar(
             if (searching) {
                 CircularProgressIndicator(modifier = Modifier.padding(12.dp))
             } else {
-                IconButton(onClick = { /* centrar en mi ubicación de nuevo */ }) {
+                // Bug real reportado: este botón no hacía nada (onClick
+                // vacío, solo un comentario). Ahora sí recentra el mapa en
+                // la ubicación actual y recarga los cargadores cercanos.
+                IconButton(onClick = onLocateMe) {
                     Icon(Icons.Filled.MyLocation, contentDescription = stringResource(R.string.map_locate_me_action))
                 }
             }
@@ -723,8 +733,22 @@ data class MapBounds(val north: Double, val south: Double, val east: Double, val
  * (`boundingbox`, ver `OpenChargeMapApi`), que por construcción nunca puede
  * producir ese artefacto, a ningún nivel de zoom.
  */
+/**
+ * Zoom out más allá de esto (diagonal de la pantalla visible) ya no
+ * dispara recarga automática — a petición del usuario: a esa escala
+ * (varias regiones/un país) buscar y pintar cada punto individual deja de
+ * tener sentido (miles de pines, consulta enorme) y no aporta nada sobre
+ * lo que ya había cargado. El mapa se sigue pudiendo mover libremente,
+ * simplemente no dispara una nueva búsqueda hasta volver a acercarse.
+ */
+private const val MAX_AUTO_REFRESH_DIAGONAL_KM = 300.0
+
 private fun reportMapMoved(mapView: MapView, onMapMoved: (MapBounds) -> Unit) {
     val box = mapView.boundingBox
+    val diagonalKm = runCatching {
+        distanceMeters(box.latNorth, box.lonWest, box.latSouth, box.lonEast) / 1000.0
+    }.getOrDefault(0.0)
+    if (diagonalKm > MAX_AUTO_REFRESH_DIAGONAL_KM) return
     onMapMoved(MapBounds(north = box.latNorth, south = box.latSouth, east = box.lonEast, west = box.lonWest))
 }
 

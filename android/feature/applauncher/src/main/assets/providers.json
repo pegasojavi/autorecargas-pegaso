@@ -118,6 +118,13 @@
       "androidPackage": "com.placetoplug.eranovum",
       "deepLinkScheme": null,
       "playStoreId": "com.placetoplug.eranovum"
+    },
+    {
+      "providerId": "atlante",
+      "displayName": "myAtlante",
+      "androidPackage": "com.atlante.charging",
+      "deepLinkScheme": null,
+      "playStoreId": "com.atlante.charging"
     }
   ]
 }
