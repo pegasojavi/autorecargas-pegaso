@@ -199,7 +199,7 @@ filtro). Verificado en vivo ahora mismo:
 
 | Título real en OCM | App real | Package Android | Confianza |
 |---|---|---|---|
-| Umbrella eMobility (ES) | Umbrella emobility | `com.placetoplug.elecchargepoints` | Alta — título exacto confirmado contra `GET /v3/referencedata` (ID 3786), app y package confirmados en Google Play (desarrollador ELEC Charge Points, mismo grupo "placetoplug" que Eranovum). |
+| Umbrella eMobility (ES) | Umbrella emobility | `com.placetoplug.elecchargepoints` | Alta — título exacto confirmado contra `GET /v3/referencedata` (ID 3786), app y package confirmados en Google Play (desarrollador ELEC Charge Points, mismo grupo "placetoplug" que Eranovum). **Ubicación real confirmada por el usuario:** cargador visto en el Bluespace de Móstoles (Madrid) — sirve como referencia de campo si hay que volver a probar la app en dispositivo. |
 
 ## Verificados — Estonia/Eslovaquia/Eslovenia/Croacia (2026-09-10)
 
