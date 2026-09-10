@@ -73,13 +73,21 @@ servidos por ladenetz.de y (b) verificar cuáles de las ~75 eléctricas
 municipales alemanas de la lista son miembro de ladenetz.de vs. tienen app
 propia como EWE/Mainova/Leipzig.
 
+## Verificados — ronda 3 (2026-09-10, a partir de un cargador real encontrado por el usuario)
+
+| Título en lista | App real | Package Android | Confianza / notas |
+|---|---|---|---|
+| Plenergy (ES) | Plenergy | `com.plenoil.plenergyapp` | Alta — título OCM verificado en vivo (`Plenergy (ES)`, coincide exacto), app y package confirmados en Google Play (desarrollador PLENERGY GRUPO SL), la propia web de Plenergy (`plenergy.es/carga-electrica/`) confirma que la app cubre carga eléctrica, no solo combustible. |
+
 **Siguiente ronda:** continuar con el resto de marcas reconocibles no
 municipales (p. ej. Scottish Power, Naturgy, Moeve, Rompetrol, Kople, Lad
 Opp, ZSE Drive, Silverstone Green Energy...), completar la lista de
 eléctricas municipales alemanas restantes (~70 más) contrastando membresía
 en ladenetz.de antes de buscarlas una a una, y verificar el resto de
 sindicatos departamentales franceses (SDET, SDEY, Sigeif, USEDA) para
-confirmar si comparten el mismo patrón "sin app propia" de SDEG16.
+confirmar si comparten el mismo patrón "sin app propia" de SDEG16. Seguir
+priorizando los cargadores reales que el usuario encuentre sobre el mapa
+(como Plenergy) frente a la búsqueda ciega del resto de la lista.
 
 | Titulo real en OCM | Web |
 |---|---|
