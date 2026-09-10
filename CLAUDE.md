@@ -641,6 +641,29 @@ Dos streams, uno por plataforma — ya no por capa UI/backend:
 | `builder-ios` | Sonnet | Implementa la app iOS completa (mapa, ficha, "cómo llegar", QR, lanzador, selector de idioma) |
 
 Reglas para los agentes:
+- **La sesión principal de Claude Code no programa.** Leer código, compilar,
+  ejecutar tests o diagnosticar un fallo (para entender la causa) sí es
+  trabajo de la sesión principal, pero cualquier cambio de código de la app
+  — un fix de una línea incluido — lo aplica el builder de la plataforma
+  correspondiente (`builder-android` / `builder-ios`), nunca la sesión
+  principal directamente. Si hace falta iterar rápido varias rondas sobre
+  el mismo bug, se invoca al builder varias veces, no se salta el paso.
+- **Todo cambio de un builder pasa por una revisión del researcher de su
+  misma plataforma antes de darse por bueno** (`builder-android` →
+  `researcher-android`; `builder-ios` → `researcher-ios`). El researcher
+  revisa el diff contra el plan/bug reportado y contra lo que ya sabe de la
+  plataforma (patrones Compose/SwiftUI, comportamiento real de las APIs
+  usadas, datos de `docs/providers/`) — el objetivo es pillar fixes que
+  compilan pero son incorrectos o frágiles (p. ej. una causa raíz mal
+  diagnosticada, una API usada de forma no soportada, una regresión en algo
+  que ya funcionaba) antes de compilar el APK final o hacer commit.
+  **Si el veredicto de la revisión es OK (con o sin reservas menores), es el
+  propio researcher quien compila** (`assembleDebug`/`testDebugUnitTest` en
+  Android, el equivalente de CI en iOS) para confirmar el build en verde —
+  no se delega esa compilación de vuelta al builder ni la asume la sesión
+  principal. Si el veredicto es "rechazar" o "necesita ajuste", vuelve al
+  builder correspondiente con el motivo concreto, y no se compila hasta que
+  pase una nueva revisión.
 - Cada builder toca **solo su codebase** (`android/` o `ios/`); nunca se
   cruzan.
 - `researcher-android` y `researcher-ios` documentan el mismo operador en

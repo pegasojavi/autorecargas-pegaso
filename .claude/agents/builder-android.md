@@ -35,14 +35,22 @@ Reglas:
   sale de la tabla estática `RoamingPartnerships`
   (`docs/providers/roaming-agreements.md`), no del dataset OCM.
 - Idiomas (CLAUDE.md sección 6): un fichero `values-<lang>/strings.xml` por
-  idioma (ES/FR/EN/DE en el MVP), nunca texto embebido en código. El
-  selector de idioma **debe** leer `resources.assets.locales` (o
-  `AssetManager.getLocales()`) para listar los idiomas disponibles — nunca
-  un array hardcodeado — y usar `AppCompatDelegate.setApplicationLocales`
-  para aplicar el cambio. **Nunca llames a `setApplicationLocales` al
-  arrancar la app ni con un idioma fijo** — solo tras una elección explícita
-  del usuario en el selector; hasta entonces, el idioma por defecto debe
-  ser el que ya resuelve el sistema operativo solo (CLAUDE.md sección 6).
+  idioma (ES/FR/EN/DE en el MVP), nunca texto embebido en código. ⚠️ El
+  selector de idioma **NO** debe leer `resources.assets.locales` — esa API
+  devuelve también los idiomas que traducen las propias librerías
+  (AppCompat/Material), no solo los nuestros (bug real ya corregido). La
+  fuente de verdad es `res/xml/locales_config.xml` (+ `android:localeConfig`
+  en el manifest), parseado a mano con `XmlPullParser` — no existe un
+  método de una línea en `androidx.core` que lo lea. Usa
+  `AppCompatDelegate.setApplicationLocales` para aplicar el cambio, y
+  recuerda que `MainActivity` debe extender `AppCompatActivity` (no
+  `ComponentActivity`) para que esa llamada recomponga la UI de verdad — y
+  que el tema del manifest tiene que ser un `Theme.AppCompat`/descendiente,
+  nunca uno de plataforma, o la Activity crashea al arrancar. **Nunca
+  llames a `setApplicationLocales` al arrancar la app ni con un idioma
+  fijo** — solo tras una elección explícita del usuario en el selector;
+  hasta entonces, el idioma por defecto debe ser el que ya resuelve el
+  sistema operativo solo (CLAUDE.md sección 6).
 - Suscripción (CLAUDE.md sección 7): usa Google Play Billing Library contra
   el producto configurado en Play Console (0,99 €/año, prueba de 3 días) —
   no inventes lógica de facturación propia ni backend de validación. El
