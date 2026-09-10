@@ -339,6 +339,14 @@ private fun connectorTypeLabel(type: ConnectorType): String = when (type) {
  * versión real de la librería usada en el proyecto (`material-icons-extended`
  * 1.7.8): Power, Bolt, ElectricCar, Outlet y Wifi existen los cuatro como
  * `Icons.Filled.*`.
+ *
+ * Se evaluó (y se descartó) sustituir estos iconos genéricos por glifos
+ * dibujados a mano con la disposición de pines real de cada estándar — entre
+ * otras cosas para no reutilizar la tabla comparativa de
+ * https://emobilityadvisor.com/por-que-no-hay-un-estandar-entre-los-cargadores-electricos,
+ * que cita esa imagen como "Fuente: computerhoy.com" sin licencia de uso. La
+ * alternativa quedó revertida a petición del usuario tras verla en una
+ * previsualización — esta es la versión vigente, ya con build verde.
  */
 private fun connectorTypeIcon(type: ConnectorType): ImageVector = when (type) {
     // AC lento (Tipo 1/2/3): icono genérico de "enchufe/corriente".
