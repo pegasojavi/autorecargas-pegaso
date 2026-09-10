@@ -46,6 +46,7 @@ dependencies {
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.osmdroid.android)
+  implementation(libs.androidx.datastore.preferences) // persistencia de ChargerFilters (CLAUDE.md sección 4.1)
 
   testImplementation(libs.junit)
   testImplementation(libs.mockk)

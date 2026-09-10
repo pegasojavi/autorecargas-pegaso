@@ -78,6 +78,7 @@ dependencies {
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.appcompat) // AppCompatDelegate.setApplicationLocales (selector de idioma, CLAUDE.md sección 6)
+  implementation(libs.androidx.datastore.preferences) // Context.mapFiltersDataStore en AppContainer (CLAUDE.md sección 4.1)
 
   // Arch Components
   implementation(libs.androidx.lifecycle.runtime.compose)

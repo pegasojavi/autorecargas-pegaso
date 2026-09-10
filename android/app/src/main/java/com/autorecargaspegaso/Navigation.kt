@@ -59,6 +59,7 @@ fun MainNavigation() {
                                     }
                                 },
                                 getDirections = { charger -> appContainer.chargerAppLauncher.launchDirections(charger) },
+                                filtersRepository = appContainer.chargerFiltersRepository,
                             )
                         }
                     },

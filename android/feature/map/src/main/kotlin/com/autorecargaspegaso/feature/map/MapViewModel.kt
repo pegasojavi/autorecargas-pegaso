@@ -85,6 +85,13 @@ class MapViewModel(
     private val geocodingRepository: GeocodingRepository,
     private val openProviderApp: (Charger) -> Unit,
     private val getDirections: (Charger) -> Unit,
+    /**
+     * Persistencia local del filtro de conector (CLAUDE.md sección 4.1,
+     * petición del usuario 2026-09-10) — interfaz aparte para poder
+     * mockearla en tests. `minPowerKw` sigue siendo solo de sesión, no se
+     * persiste (ver [ChargerFiltersRepository]).
+     */
+    private val filtersRepository: ChargerFiltersRepository,
 ) : ViewModel() {
 
     // Arranca ya en Success (vacío, isRefreshing = true) en vez de Loading:
@@ -103,8 +110,42 @@ class MapViewModel(
 
     private var lastQueriedLocation: Pair<Double, Double>? = null
 
+    /**
+     * Condición de carrera real detectada por `researcher-android`: la UI ya
+     * es interactiva desde el primer frame (arranca en `Success` vacío), así
+     * que el usuario puede pulsar un chip de filtro (`toggleConnectorType`,
+     * síncrono sobre `_uiState`) mientras la corrutina de `init` todavía está
+     * esperando la lectura de DataStore (sobre todo en arranque en frío, sin
+     * caché en memoria todavía). Si esa corrutina aplicara el valor
+     * persistido sin comprobar nada, pisaría el toggle reciente del usuario
+     * con el valor viejo — "el chip se desactiva solo" justo después de
+     * tocarlo. Este flag se marca en cuanto el usuario interactúa, y se
+     * comprueba DESPUÉS de que la lectura asíncrona de DataStore complete
+     * (nunca antes de lanzar la corrutina) para capturar cualquier toggle
+     * ocurrido durante la espera: si ya es `true`, el valor persistido no se
+     * aplica — gana la decisión más reciente del usuario.
+     */
+    private var userHasToggledFilters = false
+
     init {
         loadNearbyDefault(DEFAULT_LATITUDE, DEFAULT_LONGITUDE)
+        // Filtro de conector persistido entre sesiones (CLAUDE.md sección
+        // 4.1): se aplica en cuanto esté disponible, sin bloquear el primer
+        // frame (que ya arranca en Success vacío, ver comentario de arriba).
+        // Independiente de la carga de cargadores: usa updateFilters, que
+        // solo exige que el estado ya sea Success (lo es desde el arranque),
+        // así que no importa el orden relativo en que terminen ambas
+        // corrutinas.
+        viewModelScope.launch {
+            val persisted = filtersRepository.loadExcludedConnectorTypes()
+            // Comprobación DESPUÉS del suspend de arriba (ver comentario en
+            // la declaración del flag): si el usuario ya tocó un chip
+            // mientras se leía DataStore, su decisión gana y el valor
+            // persistido (más viejo) se descarta en vez de sobrescribirla.
+            if (persisted.isNotEmpty() && !userHasToggledFilters) {
+                updateFilters { it.copy(excludedConnectorTypes = persisted) }
+            }
+        }
     }
 
     /**
@@ -251,14 +292,33 @@ class MapViewModel(
     }
 
     /** Pulsar un chip ya activado (en color) lo excluye; pulsar uno excluido lo vuelve a activar. */
-    fun toggleConnectorType(type: ConnectorType) = updateFilters { filters ->
-        filters.copy(
-            excludedConnectorTypes = if (type in filters.excludedConnectorTypes) {
-                filters.excludedConnectorTypes - type
-            } else {
-                filters.excludedConnectorTypes + type
-            },
-        )
+    fun toggleConnectorType(type: ConnectorType) {
+        userHasToggledFilters = true
+        updateFilters { filters ->
+            filters.copy(
+                excludedConnectorTypes = if (type in filters.excludedConnectorTypes) {
+                    filters.excludedConnectorTypes - type
+                } else {
+                    filters.excludedConnectorTypes + type
+                },
+            )
+        }
+        persistExcludedConnectorTypes()
+    }
+
+    /**
+     * Guarda el filtro de conector actual en DataStore (asíncrono, no
+     * bloquea la UI — CLAUDE.md sección 4.1). `updateFilters` ya actualizó
+     * `_uiState.value` de forma síncrona antes de llegar aquí, así que este
+     * método siempre persiste el valor recién aplicado.
+     */
+    private fun persistExcludedConnectorTypes() {
+        val current = _uiState.value
+        if (current is MapUiState.Success) {
+            viewModelScope.launch {
+                filtersRepository.saveExcludedConnectorTypes(current.filters.excludedConnectorTypes)
+            }
+        }
     }
 
     fun toggleMinPower(minPowerKw: Double) = updateFilters { filters ->
