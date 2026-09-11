@@ -174,7 +174,8 @@ Aplica por igual a la app Android y a la app iOS.
   "cargadores cerca de mí ahora".
 - **Mapa interactivo** con cargadores cercanos (geolocalización, dataset
   abierto): pan/zoom libre, un pin por cargador (agrupado en clusters si hay
-  muchos en poca área), pulsar un pin abre su ficha rápida. Datos por pin:
+  muchos en poca área ✅ implementado 2026-09-11, ver sección 12), pulsar un
+  pin abre su ficha rápida. Datos por pin:
   ubicación, proveedor(es) asociados, y los metadatos que el dataset ofrezca
   (tipo de conector, potencia) — sin estado de disponibilidad en tiempo real
   salvo que el dataset lo incluya. Los filtros (sección "Fase 2" más abajo
@@ -1246,6 +1247,26 @@ de decisión, son trabajo pendiente de `builder-android`):**
   largo del trazado. Tamaño comparable al escáner QR o los filtros —
   tarea propia, no un fix rápido; pendiente de que el product owner la
   priorice.
+
+- ✅ **Resuelto (2026-09-11): clustering de pines del mapa** (CLAUDE.md
+  sección 2, requisito del MVP nunca implementado hasta ahora, detectado
+  como hueco real por `researcher-android` al auditar el propio documento).
+  Se pidió usar `RadiusMarkerClusterer` de osmdroid, pero **esa clase no
+  existe en `org.osmdroid:osmdroid-android:6.1.20`** (verificado dos veces,
+  por el builder y de forma independiente por el researcher, con
+  `javap`/`unzip -l` sobre el AAR real) — pertenece a OSMBonusPack, una
+  librería de terceros sin publicar en Maven Central y sin build
+  verificado contra esa versión de osmdroid. En vez de añadir esa
+  dependencia externa sin mantenimiento, se reimplementó el mismo
+  algoritmo (agrupado voraz por radio, en píxeles de pantalla vía
+  `MapView.getProjection()`, no en metros — así se adapta solo al zoom)
+  directamente sobre primitivas nativas de osmdroid. Icono de cluster
+  propio (círculo con el mismo degradado bronce del icono de la app + nº
+  de cargadores agrupados). "Yo" y el lugar buscado nunca se agrupan, solo
+  cargadores reales. Confirmado que un pan puro no necesita reagrupar
+  (invariante geométrico: la distancia en píxeles entre dos puntos fijos
+  no cambia con el pan, solo con el zoom) — no era un descuido, se
+  verificó explícitamente.
 
 Ya no hay pendientes 🔶 de decisión del product owner sobre el alcance — lo
 que queda de la lista original es ejecución:

@@ -57,6 +57,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -657,6 +658,25 @@ private fun ErrorContent(message: String, padding: PaddingValues) {
 private const val DEFAULT_ZOOM = 13.0
 private const val MY_LOCATION_ZOOM = 17.0
 
+/**
+ * Radio de agrupado de cargadores, en dp de PANTALLA (no metros): dos
+ * cargadores se agrupan en el mismo cluster cuando sus posiciones proyectadas
+ * en pantalla caen a menos de este radio entre sí. Al ser un radio en
+ * pantalla, el agrupado se adapta solo al nivel de zoom (mismo mecanismo que
+ * usan los clusterers estándar de mapas) sin necesitar recalcular nada en
+ * metros/grados.
+ */
+private const val CLUSTER_RADIUS_DP = 32f
+
+/** Cuántos niveles de zoom se acerca la cámara al pulsar un cluster. */
+private const val CLUSTER_TAP_ZOOM_STEP = 2.0
+
+/** Tope de zoom al pulsar un cluster — no tiene sentido acercar más que el máximo que ya soporta MAPNIK/osmdroid. */
+private const val CLUSTER_TAP_MAX_ZOOM = 19.0
+
+/** Duración de la animación de zoom al pulsar un cluster. */
+private const val CLUSTER_TAP_ZOOM_DURATION_MS = 400L
+
 @Composable
 private fun OsmMapView(
     chargers: List<Charger>,
@@ -671,6 +691,11 @@ private fun OsmMapView(
     val myLocationLabel = stringResource(R.string.map_my_location_label)
     val myLocationIcon = remember { createDotDrawable(context, fillColor = 0xFF2E7DFF.toInt()) }
     val searchedPlaceIcon = remember { createDotDrawable(context, fillColor = 0xFF22B573.toInt()) }
+    // Cache de iconos de cluster por tamaño de grupo (2, 3, 4...) — se regeneran
+    // muy a menudo (cada zoom/recomposición, ver rebuildOverlays más abajo) y
+    // dibujar el Bitmap a mano no es gratis, así que se evita recrear el mismo
+    // dibujo para el mismo número de cargadores agrupados.
+    val clusterIconCache = remember { mutableMapOf<Int, android.graphics.drawable.Drawable>() }
     val mapView = remember {
         MapView(context).apply {
             setTileSource(TileSourceFactory.MAPNIK)
@@ -711,6 +736,90 @@ private fun OsmMapView(
     // programaban un "buscar en esta zona" automático).
     var isProgrammaticCameraMove by remember { mutableStateOf(false) }
 
+    // `rememberUpdatedState`: el MapListener de más abajo se registra una
+    // sola vez (`DisposableEffect(mapView)`, mapView nunca cambia) pero
+    // necesita ver siempre el valor MÁS RECIENTE de estos parámetros al
+    // reagrupar en cluster tras un gesto de zoom del usuario — sin esto, el
+    // listener capturaría para siempre los valores de la composición en la
+    // que se creó.
+    val currentChargers by rememberUpdatedState(chargers)
+    val currentMyLocation by rememberUpdatedState(myLocation)
+    val currentSearchedPlace by rememberUpdatedState(searchedPlace)
+    val currentOnChargerClick by rememberUpdatedState(onChargerClick)
+
+    // Reconstruye TODOS los overlays: "Yo" y el lugar buscado como marcadores
+    // sueltos (nunca entran en el cluster, ver CLAUDE.md sección 2 y el
+    // requisito de esta ronda de bugs: solo los cargadores reales se
+    // agrupan), y los cargadores agrupados por proximidad EN PANTALLA
+    // (radio en px, no en metros — así el agrupado se adapta solo al nivel
+    // de zoom, igual que el mecanismo estándar de clustering de mapas).
+    //
+    // Se llama tanto desde `update` del AndroidView (cuando cambian
+    // chargers/center/myLocation/searchedPlace, un cambio de composición)
+    // como desde `onZoom` del MapListener de abajo (un gesto de zoom del
+    // usuario no cambia ningún estado de Compose por sí solo, pero sí
+    // cambia qué cargadores deben agruparse juntos en pantalla).
+    fun rebuildOverlays(view: MapView) {
+        view.overlays.clear()
+
+        currentMyLocation?.let { (latitude, longitude) ->
+            val meMarker = Marker(view).apply {
+                position = GeoPoint(latitude, longitude)
+                title = myLocationLabel
+                icon = myLocationIcon
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+            }
+            view.overlays.add(meMarker)
+        }
+
+        currentSearchedPlace?.let { place ->
+            val searchMarker = Marker(view).apply {
+                position = GeoPoint(place.latitude, place.longitude)
+                title = place.label
+                icon = searchedPlaceIcon
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+            }
+            view.overlays.add(searchMarker)
+        }
+
+        clusterChargers(view, currentChargers).forEach { cluster ->
+            val single = cluster.chargers.singleOrNull()
+            val marker = if (single != null) {
+                // Sin agrupar (uno solo en su radio): mismo Marker de
+                // siempre, mismo listener de clic que abre la ficha —
+                // idéntico comportamiento a antes de introducir clustering.
+                Marker(view).apply {
+                    position = GeoPoint(single.latitude, single.longitude)
+                    title = single.name
+                    snippet = single.address
+                    setOnMarkerClickListener { _, _ -> currentOnChargerClick(single); true }
+                }
+            } else {
+                // Cluster real (2+ cargadores muy próximos en pantalla):
+                // icono propio (rayo bronce + nº de cargadores, ver
+                // createClusterIcon) en el centroide del grupo; pulsarlo
+                // hace zoom in sobre el grupo (comportamiento estándar de
+                // un clusterer de mapas) en vez de abrir una ficha.
+                Marker(view).apply {
+                    position = GeoPoint(cluster.centerLatitude, cluster.centerLongitude)
+                    icon = clusterIconCache.getOrPut(cluster.chargers.size) {
+                        createClusterIcon(view.context, cluster.chargers.size)
+                    }
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                    setOnMarkerClickListener { _, _ ->
+                        val targetZoom = (view.zoomLevelDouble + CLUSTER_TAP_ZOOM_STEP)
+                            .coerceAtMost(CLUSTER_TAP_MAX_ZOOM)
+                        view.controller.animateTo(position, targetZoom, CLUSTER_TAP_ZOOM_DURATION_MS)
+                        true
+                    }
+                }
+            }
+            view.overlays.add(marker)
+        }
+
+        view.invalidate()
+    }
+
     DisposableEffect(mapView) {
         val listener = object : MapListener {
             override fun onScroll(event: ScrollEvent?): Boolean {
@@ -720,6 +829,12 @@ private fun OsmMapView(
 
             override fun onZoom(event: ZoomEvent?): Boolean {
                 if (!isProgrammaticCameraMove) reportMapMoved(mapView, onMapMoved)
+                // El zoom cambia qué cargadores caen dentro del mismo radio
+                // en pantalla (más juntos al alejar, más separados al
+                // acercar) — hace falta reagrupar aquí, no solo cuando
+                // cambian los datos, para que un cluster se expanda/colapse
+                // igual que con el mecanismo estándar de un clusterer real.
+                rebuildOverlays(mapView)
                 return false
             }
         }
@@ -761,40 +876,14 @@ private fun OsmMapView(
             // respetarse. Forzar aquí el mismo modo de compositing resuelve el
             // conflicto sin tocar el resto de la jerarquía.
             modifier = Modifier.fillMaxSize().graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen),
-            update = { view ->
-                view.overlays.clear()
-
-                myLocation?.let { (latitude, longitude) ->
-                    val meMarker = Marker(view).apply {
-                        position = GeoPoint(latitude, longitude)
-                        title = myLocationLabel
-                        icon = myLocationIcon
-                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-                    }
-                    view.overlays.add(meMarker)
-                }
-
-                searchedPlace?.let { place ->
-                    val searchMarker = Marker(view).apply {
-                        position = GeoPoint(place.latitude, place.longitude)
-                        title = place.label
-                        icon = searchedPlaceIcon
-                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-                    }
-                    view.overlays.add(searchMarker)
-                }
-
-                chargers.forEach { charger ->
-                    val marker = Marker(view).apply {
-                        position = GeoPoint(charger.latitude, charger.longitude)
-                        title = charger.name
-                        snippet = charger.address
-                        setOnMarkerClickListener { _, _ -> onChargerClick(charger); true }
-                    }
-                    view.overlays.add(marker)
-                }
-                view.invalidate()
-            },
+            // La propia composable `OsmMapView` ya recompone al cambiar
+            // `chargers`/`myLocation`/`searchedPlace` (se leen más arriba,
+            // p. ej. en el `LaunchedEffect(center, ...)`), así que este
+            // `update` se vuelve a invocar solo. La reconstrucción de
+            // overlays en sí vive en `rebuildOverlays` porque también hace
+            // falta dispararla desde `MapListener.onZoom` de arriba, que no
+            // participa del ciclo normal de recomposición.
+            update = { view -> rebuildOverlays(view) },
         )
 
         // Control de zoom propio, abajo-derecha (fix combinado del zoom
@@ -840,6 +929,164 @@ private fun MapZoomControls(
 
 /** Rectángulo visible del mapa, en grados — ver [MapViewModel.refreshVisibleArea]. */
 data class MapBounds(val north: Double, val south: Double, val east: Double, val west: Double)
+
+/**
+ * Un grupo de uno o más cargadores que caen dentro del mismo radio en
+ * pantalla (ver [CLUSTER_RADIUS_DP] y [clusterChargers]). [centerLatitude]/
+ * [centerLongitude] son el centroide (media aritmética) de sus posiciones
+ * reales, no la posición de ninguno de ellos en concreto.
+ */
+private data class ChargerCluster(
+    val chargers: List<Charger>,
+    val centerLatitude: Double,
+    val centerLongitude: Double,
+)
+
+/**
+ * Agrupa cargadores por proximidad EN PANTALLA (no por distancia real en
+ * metros): se proyecta cada cargador a coordenadas de píxel con la
+ * proyección actual del mapa (`MapView.getProjection()`, que ya tiene en
+ * cuenta el nivel de zoom vigente) y se agrupan con un algoritmo voraz por
+ * radio — se toma el primer cargador sin agrupar, se le unen todos los que
+ * caigan a menos de [CLUSTER_RADIUS_DP] de distancia en pantalla, se
+ * marcan como agrupados y se repite con el resto. Es el mismo algoritmo que
+ * usa `RadiusMarkerClusterer` de OSMBonusPack (`org.osmdroid.bonuspack.
+ * clustering`, verificado en su fuente pública) — pero esa clase NO forma
+ * parte del artefacto `org.osmdroid:osmdroid-android:6.1.20` que usa este
+ * proyecto (verificado con `javap`/`unzip -l` sobre el AAR real resuelto
+ * por Gradle: el paquete `org.osmdroid.views.overlay.clustering` no existe
+ * en ese artefacto, solo en la librería de terceros OSMBonusPack, sin
+ * publicar en Maven Central y sin build verificado contra osmdroid 6.1.20)
+ * — así que aquí se reimplementa el mismo algoritmo directamente sobre las
+ * primitivas nativas de osmdroid (`Marker`, `MapView.getProjection()`) en
+ * vez de añadir esa dependencia externa sin mantenimiento activo.
+ *
+ * Si la vista todavía no tiene layout real (proyección no disponible, p. ej.
+ * primer frame antes de que `AndroidView` le dé tamaño), se degrada a "cada
+ * cargador es su propio cluster" en vez de fallar.
+ */
+private fun clusterChargers(view: MapView, chargers: List<Charger>): List<ChargerCluster> {
+    if (chargers.isEmpty()) return emptyList()
+
+    val radiusPx = CLUSTER_RADIUS_DP * view.context.resources.displayMetrics.density
+    val projection = runCatching { view.projection }.getOrNull()
+        ?: return chargers.map { ChargerCluster(listOf(it), it.latitude, it.longitude) }
+
+    val points = chargers.map { charger ->
+        val screenPoint = runCatching {
+            projection.toPixels(GeoPoint(charger.latitude, charger.longitude), null)
+        }.getOrNull()
+        charger to screenPoint
+    }
+
+    val pending = points.toMutableList()
+    val clusters = mutableListOf<ChargerCluster>()
+    while (pending.isNotEmpty()) {
+        val (seedCharger, seedPoint) = pending.removeAt(0)
+        if (seedPoint == null) {
+            // No se pudo proyectar (no debería pasar con proyección
+            // disponible, pero por seguridad no se agrupa a ciegas).
+            clusters += ChargerCluster(listOf(seedCharger), seedCharger.latitude, seedCharger.longitude)
+            continue
+        }
+        val group = mutableListOf(seedCharger)
+        val iterator = pending.iterator()
+        while (iterator.hasNext()) {
+            val (candidateCharger, candidatePoint) = iterator.next()
+            if (candidatePoint == null) continue
+            val dx = (candidatePoint.x - seedPoint.x).toDouble()
+            val dy = (candidatePoint.y - seedPoint.y).toDouble()
+            if (kotlin.math.sqrt(dx * dx + dy * dy) <= radiusPx) {
+                group += candidateCharger
+                iterator.remove()
+            }
+        }
+        clusters += ChargerCluster(
+            chargers = group,
+            centerLatitude = group.sumOf { it.latitude } / group.size,
+            centerLongitude = group.sumOf { it.longitude } / group.size,
+        )
+    }
+    return clusters
+}
+
+/**
+ * Icono de cluster: círculo con el mismo degradado bronce del rayo de
+ * `ic_launcher_foreground.xml` (mismo `pathData`, redibujado a mano con
+ * `android.graphics.Path` porque un `VectorDrawable` de recursos no se
+ * puede reescalar/recolorear en tiempo de ejecución para superponer el
+ * número de cargadores) con el nº de cargadores agrupados en texto blanco
+ * encima. El tamaño crece (ligeramente, con tope) según el tamaño del
+ * grupo, igual que el `getBitmapFunction` configurable de un clusterer
+ * estándar.
+ */
+private fun createClusterIcon(context: Context, count: Int): android.graphics.drawable.Drawable {
+    val density = context.resources.displayMetrics.density
+    val diameterDp = (36 + (count.coerceAtMost(50) * 0.3f)).coerceAtMost(56f)
+    val sizePx = (diameterDp * density).toInt()
+    val bitmap = android.graphics.Bitmap.createBitmap(sizePx, sizePx, android.graphics.Bitmap.Config.ARGB_8888)
+    val canvas = android.graphics.Canvas(bitmap)
+    val radius = sizePx / 2f
+
+    // Círculo de fondo con el mismo degradado bronce que el icono de la app
+    // (ver ic_launcher_foreground.xml: FCE9A8 claro -> C9A227 medio -> 6E4E10
+    // oscuro, luz desde arriba-izquierda) + borde blanco para distinguirlo
+    // sobre cualquier fondo del mapa.
+    val backgroundPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        shader = android.graphics.LinearGradient(
+            0f, 0f, sizePx.toFloat(), sizePx.toFloat(),
+            intArrayOf(0xFFFCE9A8.toInt(), 0xFFC9A227.toInt(), 0xFF6E4E10.toInt()),
+            floatArrayOf(0f, 0.5f, 1f),
+            android.graphics.Shader.TileMode.CLAMP,
+        )
+        style = android.graphics.Paint.Style.FILL
+    }
+    val strokePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        color = android.graphics.Color.WHITE
+        style = android.graphics.Paint.Style.STROKE
+        strokeWidth = 2.5f * density
+    }
+    canvas.drawCircle(radius, radius, radius - strokePaint.strokeWidth / 2f, backgroundPaint)
+    canvas.drawCircle(radius, radius, radius - strokePaint.strokeWidth / 2f, strokePaint)
+
+    // Silueta del rayo (mismo `pathData` que ic_launcher_foreground.xml,
+    // viewport 108x108) como motivo de marca, tenue detrás del número —
+    // no debe competir en contraste con el texto, que es lo que hay que
+    // leer de un vistazo.
+    val boltPath = android.graphics.Path().apply {
+        moveTo(38f, 22f)
+        lineTo(38f, 57.2f)
+        lineTo(47.6f, 57.2f)
+        lineTo(47.6f, 86f)
+        lineTo(70f, 47.6f)
+        lineTo(57.2f, 47.6f)
+        lineTo(70f, 22f)
+        close()
+    }
+    val boltScale = sizePx / 108f
+    val boltMatrix = android.graphics.Matrix().apply { setScale(boltScale, boltScale) }
+    boltPath.transform(boltMatrix)
+    val boltPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        color = android.graphics.Color.WHITE
+        alpha = 90
+        style = android.graphics.Paint.Style.FILL
+    }
+    canvas.drawPath(boltPath, boltPaint)
+
+    // Número de cargadores agrupados, en blanco y negrita, centrado.
+    val textPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        color = android.graphics.Color.WHITE
+        textSize = sizePx * 0.4f
+        textAlign = android.graphics.Paint.Align.CENTER
+        typeface = android.graphics.Typeface.DEFAULT_BOLD
+        setShadowLayer(3f, 0f, 0f, 0x99000000.toInt())
+    }
+    val text = count.toString()
+    val textY = radius - (textPaint.descent() + textPaint.ascent()) / 2f
+    canvas.drawText(text, radius, textY, textPaint)
+
+    return android.graphics.drawable.BitmapDrawable(context.resources, bitmap)
+}
 
 /**
  * Reporta el rectángulo visible real del mapa, no un círculo aproximado.
